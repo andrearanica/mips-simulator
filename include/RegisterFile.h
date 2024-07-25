@@ -12,7 +12,7 @@ class RegisterFile {
 
         void initializeRegisters() {
             for(int i = 0; i < N_REGISTERS; i++) {
-                this->registers[i] = 0;
+                registers[i] = 0;
             }
         }
 
@@ -42,21 +42,21 @@ class RegisterFile {
         }
 
         int getReadData1() {
-            return this->registers[readRegister1];
+            return registers[readRegister1];
         }
 
         int getReadData2() {
-            return this->registers[readRegister2];
+            return registers[readRegister2];
         }
 
         void write() {
-            this->registers[this->writeRegister] = this->writeData;
+            registers[writeRegister] = writeData;
         }
 
         std::string toString() {
             std::string registerFileStr = "";
             for(int i = 0; i < N_REGISTERS; i++) {
-                registerFileStr += std::to_string(this->registers[i]) + ";";
+                registerFileStr += std::to_string(registers[i]) + ";";
             }
             return registerFileStr;
         }

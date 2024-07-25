@@ -58,6 +58,7 @@ Input:
 Output:
 - MemData: the data read form the memory at the address
 
+
 ### Datapath
 The datapath contains all the components written before. It will do the following operations:
 - Fetch
@@ -65,4 +66,4 @@ The datapath contains all the components written before. It will do the followin
     - Increments the program counter
 - Decode
     - Loads inside A and B the value of the registers written inside the instruction
-    - 
+    - Calculates and puts inside the ALUOut register the branch address (to take if the instruction is a branch instruction and condition is true)
