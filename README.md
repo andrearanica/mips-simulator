@@ -58,11 +58,11 @@ Input:
 Output:
 - MemData: the data read form the memory at the address
 
-### Control unit
-The control unit is the part of the CPU that enables the control signals inside the datapath. The behaviour of the control unit is described by a finite-state machine.
-
-Input:
-- Instruction[31-26]: the first 6 bits from the left of the operation
-
-Output:
-- All the signals to enable/disable components; these signals will be stored inside an unordered_map
+### Datapath
+The datapath contains all the components written before. It will do the following operations:
+- Fetch
+    - Reads the instruction from the memory
+    - Increments the program counter
+- Decode
+    - Loads inside A and B the value of the registers written inside the instruction
+    - 

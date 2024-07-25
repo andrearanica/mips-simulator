@@ -1,8 +1,12 @@
+#include <string>
+using namespace std;
+
 class Memory {
     private:
         int address;
         int writeData;
         int* data;
+        int size;
     
     public:
         Memory(int size) {
@@ -10,6 +14,7 @@ class Memory {
             this->address = 0;
             this->writeData = 0;
             this->data = new int[size];
+            this->size = size;
         }
 
         void setAddress(int address) {
@@ -20,7 +25,21 @@ class Memory {
             this->writeData = writeData;
         }
 
+        void write() {
+            this->data[this->address] = this->writeData;
+        }
+
         int getData() {
             return this->data[this->address];
+        }
+
+        string toString() {
+            string result;
+            for(int i = 0; i < size; i++) {
+                if (this->data[i] != 0) {
+                    result += "Address " + to_string(i) + ": " + to_string(data[i]);
+                }
+            }
+            return result;
         }
 };

@@ -35,21 +35,13 @@ class ControlUnit {
         }
 
     public:
-        virtual unordered_map<string,int> do_decode(int phase, int opcode) {
+        virtual unordered_map<string,int> execute(int phase, int opcode) {
             // Depending on the opcode, the control unit will enable different components
             unordered_map<string,int> signals;
             switch(phase) {
                 case fetch:
                     cout << "Fetching the instruction..." << endl;
                     signals = this->build_fetch();
-                    break;
-                case decode:
-                    cout << "Decoding the instruction" << endl;
-                    signals = this->build_decode();
-                    break;
-                case execute:
-                    cout << "Executing the instruction" << endl;
-                    signals = this->build_execute();
                     break;
             }
             return signals;
