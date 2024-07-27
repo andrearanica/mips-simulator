@@ -67,3 +67,11 @@ The datapath contains all the components written before. It will do the followin
 - Decode
     - Loads inside A and B the value of the registers written inside the instruction
     - Calculates and puts inside the ALUOut register the branch address (to take if the instruction is a branch instruction and condition is true)
+- Execute
+    - Depending on the type of the instruction, it does different operations (sum, immediates...)
+    - To understand if the instruction is a r-type, i-type, beq or lw/sw the software checks the opcode
+        - if opcode == 0, r-type
+        - if opcode == 4, beq
+        - if opcode == 0x2b, store word
+        - if opcode == 0x23, load word
+        - else, it is a i-type

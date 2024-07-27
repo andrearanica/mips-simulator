@@ -1,4 +1,5 @@
 #include <string>
+using namespace std;
 
 const int N_REGISTERS = 32;
 
@@ -53,10 +54,10 @@ class RegisterFile {
             registers[writeRegister] = writeData;
         }
 
-        std::string toString() {
-            std::string registerFileStr = "";
+        string toString() {
+            string registerFileStr = "";
             for(int i = 0; i < N_REGISTERS; i++) {
-                registerFileStr += std::to_string(registers[i]) + ";";
+                registerFileStr += to_string(i) + ": " + to_string(registers[i]) + "\n";;
             }
             return registerFileStr;
         }

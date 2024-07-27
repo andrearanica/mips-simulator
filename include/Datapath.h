@@ -2,6 +2,7 @@
 #include <vector>
 #include <bitset>
 #include <typeinfo>
+#include <sstream>
 #include "ALU.h"
 #include "ControlUnit.h"
 #include "Instruction.h"
@@ -14,6 +15,8 @@ const int MEMORY_DIM = 2000000000;
 const int MAX_INSTRUCTIONS = 1000;
 
 const int TEXT_SEGMENT_START = 4194304;
+
+const string EMPTY_INSTRUCTION = "00000000000000000000000000000000";
 
 class Datapath {
     private:
@@ -74,7 +77,11 @@ class Datapath {
                 bitset<6> funct = bitset<6>(instruction_str.substr(26));
                 instruction = new RTypeInstruction(opcode.to_ulong(), rs.to_ulong(), rt.to_ulong(), rd.to_ulong(), shamt.to_ulong(), funct.to_ulong());
             } else {
-                // TODO j-type instructions and memory instructions
+                // TODO check before if it is lw/sw or beq
+                bitset<5> rs = bitset<5>(instruction_str.substr(6, 11));
+                bitset<5> rt = bitset<5>(instruction_str.substr(11, 16));
+                bitset<16> immediate = bitset<16>(instruction_str.substr(16, 32));
+                instruction = new ITypeInstruction(opcode.to_ulong(), rs.to_ulong(), rt.to_ulong(), immediate.to_ulong());
             }
 
             return instruction;
@@ -119,11 +126,34 @@ class Datapath {
                         break;
                 }
                 int result = alu.getResult();
-                cout << "Result: " << result << endl;
-                // I have to write the result of the operation to the destination register
-            } else {
-                // TODO implement i-type and jumps
+                writeResult(result, instruction->getRd());
+            } else if (ITypeInstruction* i = dynamic_cast<ITypeInstruction*>(instruction)) {
+                alu.setSrcA(A);
+                // I send to the alu the immediate part of the instruction
+                // FIXME implement negative numbers
+                bitset<16> immediate = bitset<16>(instruction->toString().substr(16, 32));
+                alu.setSrcB(immediate.to_ulong());
+                // I-Type instructions are different by the opcode
+                switch(instruction->getOpcode()) {
+                    case 8:
+                        alu.setAluOperation(2);
+                        break;
+                    case 0xc:
+                        alu.setAluOperation(0);
+                        break;
+                    case 0xd:
+                        alu.setAluOperation(1);
+                        break;
+                }
+                int result = alu.getResult();
+                writeResult(result, instruction->getRt());                
             }
+        }
+
+        void writeResult(int result, int rd) {
+            registerFile.setWriteRegister(rd);
+            registerFile.setWriteData(result);
+            registerFile.write();
         }
 
     public:
@@ -132,9 +162,15 @@ class Datapath {
         }
 
         void run(string program) {
-            vector<string> instructions = split_string(program, '\n');
-            vector<bitset<32>> instructionsBit;
-            
+            vector<string> instructions;
+            stringstream programStream(program);
+            string programRow = "";
+
+            while (getline(programStream, programRow)) {
+                instructions.push_back(programRow);
+            }
+            vector<bitset<32>> instructionsBit;            
+
             for(int i = 0; i < instructions.size(); i++) {
                 bitset<32> instruction(instructions[i]);
                 instructionsBit.push_back(instruction);
@@ -143,10 +179,17 @@ class Datapath {
             loadProgramInMemory(instructionsBit);
 
             registerFile.setReadRegister1(10);
-            cout << registerFile.getReadData1() << endl;
-
-            Instruction* fetched_instruction = fetchInstruction();
-            decodeInstruction(fetched_instruction);
-            executeInstruction(fetched_instruction);
+            
+            // FIXME not realistic
+            cout << "Execution started\n-----------------" << endl;
+            for(int i = 0; i < instructions.size(); i++) {
+                Instruction* fetched_instruction = fetchInstruction();
+                cout << "Eseguo istruzione " << i+1 << endl;
+                decodeInstruction(fetched_instruction);
+                executeInstruction(fetched_instruction);
+            }
+            cout << "Execution end\n-------------" << endl;
+            
+            cout << "Registers at the end of the execution" << endl << registerFile.toString() << endl;
         }
 };
