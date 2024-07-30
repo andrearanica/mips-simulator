@@ -66,17 +66,23 @@ class Datapath {
 
             this->PC += 4;
             string opcode_str = instruction_str.substr(0, 6);
+            string funct_str = instruction_str.substr(26, 32);
             bitset<6> opcode = bitset<6>(opcode_str); 
 
             Instruction* instruction;
             if (opcode_str == "000000") {
-                // R-Type instruction
-                bitset<5> rs = bitset<5>(instruction_str.substr(6, 11));
-                bitset<5> rt = bitset<5>(instruction_str.substr(11, 16));
-                bitset<5> rd = bitset<5>(instruction_str.substr(16, 21));
-                bitset<5> shamt = bitset<5>(instruction_str.substr(21, 26));
-                bitset<6> funct = bitset<6>(instruction_str.substr(26));
-                instruction = new RTypeInstruction(opcode.to_ulong(), rs.to_ulong(), rt.to_ulong(), rd.to_ulong(), shamt.to_ulong(), funct.to_ulong());
+                if (funct_str == "001100") {
+                    // SystemCall
+                    instruction = new SystemCallInstruction();
+                } else {
+                    // R-Type instruction
+                    bitset<5> rs = bitset<5>(instruction_str.substr(6, 11));
+                    bitset<5> rt = bitset<5>(instruction_str.substr(11, 16));
+                    bitset<5> rd = bitset<5>(instruction_str.substr(16, 21));
+                    bitset<5> shamt = bitset<5>(instruction_str.substr(21, 26));
+                    bitset<6> funct = bitset<6>(instruction_str.substr(26));
+                    instruction = new RTypeInstruction(opcode.to_ulong(), rs.to_ulong(), rt.to_ulong(), rd.to_ulong(), shamt.to_ulong(), funct.to_ulong());
+                }
             } else if (opcode_str == "000100") {
                 // Branch on Equal instruction
                 bitset<5> rs = bitset<5>(instruction_str.substr(6, 11));
@@ -137,26 +143,62 @@ class Datapath {
                 int result = alu.getResult();
                 writeResult(result, instruction->getRd());
             } else if (ITypeInstruction* i = dynamic_cast<ITypeInstruction*>(instruction)) {
+                bool isMemoryInstruction = false;
                 alu.setSrcA(A);
-                // I send to the alu the immediate part of the instruction
                 // FIXME implement negative numbers
                 bitset<16> immediate = bitset<16>(instruction->toString().substr(16, 32));
                 alu.setSrcB(immediate.to_ulong());
                 // I-Type instructions are different by the opcode
                 switch(instruction->getOpcode()) {
+                    // TODO remove numbers use enum
                     case 8:
-                        alu.setAluOperation(2);
+                        // ADDI instruction
+                        alu.setAluOperation(SUM);
                         break;
                     case 0xc:
-                        alu.setAluOperation(0);
+                        // ANDI instruction
+                        alu.setAluOperation(AND);
                         break;
                     case 0xd:
-                        alu.setAluOperation(1);
+                        // ORI instruction
+                        alu.setAluOperation(OR);
+                        break;
+                    case 0x23:
+                        // Load word instruction
+                        alu.setAluOperation(SUM);
+                        isMemoryInstruction = true;
+                        break;
+                    case 0x2b:
+                        // Store word instruction
+                        alu.setAluOperation(SUM);
+                        isMemoryInstruction = true;
+                        break;
+                    case 0xf:
+                        // Load upper immediate instruction
+                        alu.setShamt(16);
+                        alu.setAluOperation(SLL);
                         break;
                 }
                 // FIXME the result shoudl be written inside the ALUOut register
                 int result = alu.getResult();
-                writeResult(result, instruction->getRt());
+                // If it is a memory instruction the result is the address of the memory in which do the stuff
+                if (!isMemoryInstruction) {
+                    writeResult(result, instruction->getRt());
+                } else {
+                    if (instruction->getOpcode() == 0x23) {
+                        // It is a load word instruction: I have to write inside the $rt register the content of the memory
+                        memory.setAddress(result);
+                        int memoryData = memory.getData();
+                        registerFile.setWriteRegister(instruction->getRt());
+                        registerFile.setWriteData(memoryData);
+                        registerFile.write();
+                    } else {
+                        // It is a store word instruction
+                        memory.setAddress(result);
+                        memory.setWriteData(instruction->getRt());
+                        memory.write();
+                    }
+                }
             } else if (BranchOnEqualInstruction* i = dynamic_cast<BranchOnEqualInstruction*>(instruction)) {
                 // Inside ALUOut I have the new PC if the two registers are equal
                 alu.setSrcA(A);
@@ -199,13 +241,9 @@ class Datapath {
 
             registerFile.setReadRegister1(10);
             
-            cout << memory.toString() << endl;
-
-            // FIXME not realistic
+            // FIXME not realistic and doesn't work with BEQ
             for(int i = 0; i < instructions.size(); i++) {
-                cout << PC << " ";
                 Instruction* fetched_instruction = fetchInstruction();
-                cout << fetched_instruction->toString() << endl;
                 decodeInstruction(fetched_instruction);
                 executeInstruction(fetched_instruction);
             }

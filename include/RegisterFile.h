@@ -57,7 +57,7 @@ class RegisterFile {
         string toString() {
             string registerFileStr = "";
             for(int i = 0; i < N_REGISTERS; i++) {
-                registerFileStr += to_string(i) + ": " + to_string(registers[i]) + "\n";;
+                registerFileStr += to_string(i) + ": " + bitset<32>(registers[i]).to_string() + "(" + to_string(registers[i]) + ")" + "\n";
             }
             return registerFileStr;
         }

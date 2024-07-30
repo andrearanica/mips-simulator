@@ -168,3 +168,8 @@ class BranchOnEqualInstruction : public virtual Instruction {
             return opcode.to_string() + rs.to_string() + rt.to_string() + offset.to_string();
         }
 };
+
+class SystemCallInstruction : public virtual Instruction {
+    public:
+        SystemCallInstruction() : Instruction(0) {}
+};
