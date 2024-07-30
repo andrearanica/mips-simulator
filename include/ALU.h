@@ -1,6 +1,10 @@
 #include <iostream>
+#include "exceptions.h"
 
 enum AluOperations { AND, OR, SUM, SUB, SLT, SLL, SRL };
+
+const int MAX_INT = 2147483647;
+const int MIN_INT = -2147483648;
 
 class ALU {
     private: 
@@ -43,9 +47,16 @@ class ALU {
                     result = srcA | srcB;
                     break;
                 case SUM:
-                    result = srcA + srcB;
+                    if (srcA > MAX_INT - srcB) {
+                        throw OverflowException("Arithmetical overflow: "+to_string(srcA)+"+"+to_string(srcB)+" cannot be stored in 32 bits");
+                    } else {
+                        result = srcA + srcB;
+                    }
                     break;
                 case SUB:
+                    if (srcA < MIN_INT + srcB) {
+                        throw OverflowException("Arithmetical overflow: "+to_string(srcA)+"-"+to_string(srcB)+" cannot be stored in 32 bits");
+                    }
                     result = srcA - srcB;
                     break;
                 case SLT:
@@ -55,6 +66,7 @@ class ALU {
                     result = srcB << shamt;
                     break;
             }
+            
             return result;
         }
 };

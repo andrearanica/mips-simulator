@@ -32,7 +32,7 @@ class Datapath {
             for (int i = 0; i < instructions.size(); i++) {
                 bitset<32> instruction_bit = instructions.at(i);
                 string instruction_str = instruction_bit.to_string();
-                
+
                 // These bytes represent the instruction divided in bytes
                 vector<bitset<8>> bytes = {
                     bitset<8>(instruction_str.substr(24, 32)),
@@ -124,23 +124,23 @@ class Datapath {
                 alu.setSrcB(B);
                 switch(instruction->getFunct()) {
                     case 0x20:
-                        alu.setAluOperation(2);
+                        alu.setAluOperation(SUM);
                         break;
                     case 0x22:
-                        alu.setAluOperation(6);
+                        alu.setAluOperation(SUB);
                         break;
                     case 0x24:
-                        alu.setAluOperation(0);
+                        alu.setAluOperation(AND);
                         break;
                     case 0x25:
-                        alu.setAluOperation(1);
+                        alu.setAluOperation(OR);
                         break;
                     case 0x2a:
-                        alu.setAluOperation(7);
+                        alu.setAluOperation(SLT);
                         break;
                 }
-                // FIXME the result should be written inside the ALUOut register
                 int result = alu.getResult();
+                cout << A << " " << instruction->getFunct() << " " << B << " " << A+B;
                 writeResult(result, instruction->getRd());
             } else if (ITypeInstruction* i = dynamic_cast<ITypeInstruction*>(instruction)) {
                 bool isMemoryInstruction = false;
@@ -181,10 +181,15 @@ class Datapath {
                 }
                 // FIXME the result shoudl be written inside the ALUOut register
                 int result = alu.getResult();
+                // ALUOut = result;
                 // If it is a memory instruction the result is the address of the memory in which do the stuff
                 if (!isMemoryInstruction) {
                     writeResult(result, instruction->getRt());
                 } else {
+                    // I need to check if the address is valid (if it is aligned on the word)
+                    if (!isAddressValid(result)) {
+                        throw InvalidMemoryAccess("Address "+to_string(result)+" is not aligned");
+                    }
                     if (instruction->getOpcode() == 0x23) {
                         // It is a load word instruction: I have to write inside the $rt register the content of the memory
                         memory.setAddress(result);
@@ -195,7 +200,9 @@ class Datapath {
                     } else {
                         // It is a store word instruction
                         memory.setAddress(result);
-                        memory.setWriteData(instruction->getRt());
+                        registerFile.setReadRegister1(instruction->getRt());
+                        int dataToWrite = registerFile.getReadData1();
+                        memory.setWriteData(dataToWrite);
                         memory.write();
                     }
                 }
@@ -215,6 +222,25 @@ class Datapath {
             registerFile.setWriteRegister(rd);
             registerFile.setWriteData(result);
             registerFile.write();
+        }
+
+        // returns True if the address ends with two zeros (so if it is aligned at the word)
+        bool isAddressValid(int address) {
+            bitset<32> address_bit = bitset<32>(address);
+            string lastTwoBits = address_bit.to_string().substr(30, 32);
+            return (lastTwoBits == "00");
+        }
+
+        void handle() {
+            try {
+                throw;
+            } catch(OverflowException e) {
+                cout << "Overflow exception detected and ignored" << endl;
+            } catch(InvalidMemoryAccess e) {
+                cout << "Invalid memory access exception detected and ignored" << endl;
+            } catch(NotValidInstructionException e) {
+                cout << "Not valid instruction exception detected and ignored" << endl;
+            }
         }
 
     public:
@@ -238,14 +264,18 @@ class Datapath {
             }
 
             loadProgramInMemory(instructionsBit);
-
+            
             registerFile.setReadRegister1(10);
             
             // FIXME not realistic and doesn't work with BEQ
             for(int i = 0; i < instructions.size(); i++) {
                 Instruction* fetched_instruction = fetchInstruction();
                 decodeInstruction(fetched_instruction);
-                executeInstruction(fetched_instruction);
+                try {
+                    executeInstruction(fetched_instruction);
+                } catch(exception e) {
+                    handle();
+                }
             }
             
             cout << "Registers at the end of the execution" << endl << registerFile.toString() << endl;

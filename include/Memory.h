@@ -34,10 +34,10 @@ class Memory {
         }
 
         string toString() {
-            string result;
+            string result = "";
             for(int i = 0; i < size; i++) {
                 if (this->data[i] != 0) {
-                    result += "Address " + to_string(i) + ": " + to_string(data[i]);
+                    result += "Address " + to_string(i) + ": " + bitset<8>(data[i]).to_string() + "\n";
                 }
             }
             return result;
