@@ -70,13 +70,21 @@ class Datapath {
 
             Instruction* instruction;
             if (opcode_str == "000000") {
+                // R-Type instruction
                 bitset<5> rs = bitset<5>(instruction_str.substr(6, 11));
                 bitset<5> rt = bitset<5>(instruction_str.substr(11, 16));
                 bitset<5> rd = bitset<5>(instruction_str.substr(16, 21));
                 bitset<5> shamt = bitset<5>(instruction_str.substr(21, 26));
                 bitset<6> funct = bitset<6>(instruction_str.substr(26));
                 instruction = new RTypeInstruction(opcode.to_ulong(), rs.to_ulong(), rt.to_ulong(), rd.to_ulong(), shamt.to_ulong(), funct.to_ulong());
+            } else if (opcode_str == "000100") {
+                // Branch on Equal instruction
+                bitset<5> rs = bitset<5>(instruction_str.substr(6, 11));
+                bitset<5> rt = bitset<5>(instruction_str.substr(11, 16));
+                bitset<16> offset = bitset<16>(instruction_str.substr(16, 32));
+                instruction = new BranchOnEqualInstruction(rs.to_ulong(), rt.to_ulong(), offset.to_ulong());
             } else {
+                // I-Type instructions (the OPCODE is different for each instruction)
                 // TODO check before if it is lw/sw or beq
                 bitset<5> rs = bitset<5>(instruction_str.substr(6, 11));
                 bitset<5> rt = bitset<5>(instruction_str.substr(11, 16));
@@ -125,6 +133,7 @@ class Datapath {
                         alu.setAluOperation(7);
                         break;
                 }
+                // FIXME the result should be written inside the ALUOut register
                 int result = alu.getResult();
                 writeResult(result, instruction->getRd());
             } else if (ITypeInstruction* i = dynamic_cast<ITypeInstruction*>(instruction)) {
@@ -145,8 +154,18 @@ class Datapath {
                         alu.setAluOperation(1);
                         break;
                 }
+                // FIXME the result shoudl be written inside the ALUOut register
                 int result = alu.getResult();
-                writeResult(result, instruction->getRt());                
+                writeResult(result, instruction->getRt());
+            } else if (BranchOnEqualInstruction* i = dynamic_cast<BranchOnEqualInstruction*>(instruction)) {
+                // Inside ALUOut I have the new PC if the two registers are equal
+                alu.setSrcA(A);
+                alu.setSrcB(B);
+                alu.setAluOperation(6);
+                if (alu.getResult() == 0) {
+                    // The two registers are equal
+                    this->PC = ALUOut;
+                }
             }
         }
 
@@ -180,15 +199,16 @@ class Datapath {
 
             registerFile.setReadRegister1(10);
             
+            cout << memory.toString() << endl;
+
             // FIXME not realistic
-            cout << "Execution started\n-----------------" << endl;
             for(int i = 0; i < instructions.size(); i++) {
+                cout << PC << " ";
                 Instruction* fetched_instruction = fetchInstruction();
-                cout << "Eseguo istruzione " << i+1 << endl;
+                cout << fetched_instruction->toString() << endl;
                 decodeInstruction(fetched_instruction);
                 executeInstruction(fetched_instruction);
             }
-            cout << "Execution end\n-------------" << endl;
             
             cout << "Registers at the end of the execution" << endl << registerFile.toString() << endl;
         }

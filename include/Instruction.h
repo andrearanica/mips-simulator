@@ -134,3 +134,37 @@ class ITypeInstruction : public virtual Instruction {
             return result;
         }
 };
+
+class BranchOnEqualInstruction : public virtual Instruction {
+    private:
+        int rs;
+        int rt;
+        int offset;
+
+    public:
+        BranchOnEqualInstruction(int rs, int rt, int offset) : Instruction(4) {
+            this->rs = rs;
+            this->rt = rt;
+            this->offset = offset;
+        }
+
+        int getRs() {
+            return this->rs;
+        }
+
+        int getRt() {
+            return this->rt;
+        }
+
+        int getImmediate() {
+            return this->offset;
+        }
+
+        string toString() {
+            bitset<6> opcode = bitset<6>(this->opcode);
+            bitset<5> rs = bitset<5>(this->rs);
+            bitset<5> rt = bitset<5>(this->rt);
+            bitset<16> offset = bitset<16>(this->offset);
+            return opcode.to_string() + rs.to_string() + rt.to_string() + offset.to_string();
+        }
+};
