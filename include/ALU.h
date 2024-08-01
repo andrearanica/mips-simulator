@@ -65,6 +65,9 @@ class ALU {
                 case SLL:
                     result = srcB << shamt;
                     break;
+                default:
+                    throw NotValidInstructionException("Operation not supported from the ALU");
+                    break;
             }
             
             return result;

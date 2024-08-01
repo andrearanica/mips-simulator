@@ -15,3 +15,8 @@ class NotValidInstructionException : public runtime_error {
     public:
         NotValidInstructionException(string message) : runtime_error(message) {}
 };
+
+class BreakExecutionException : public runtime_error {
+    public:
+        BreakExecutionException(string message) : runtime_error(message) {}
+};

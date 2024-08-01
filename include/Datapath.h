@@ -54,6 +54,7 @@ class Datapath {
         Instruction* fetchInstruction() {
             // I load from the memory the int that represents the instruction
             int address = this->PC;
+            this->PC += 4;
             string instruction_str = "";
 
             for(int i = 0; i < 4; i++) {
@@ -64,7 +65,6 @@ class Datapath {
                 address++;
             }
 
-            this->PC += 4;
             string opcode_str = instruction_str.substr(0, 6);
             string funct_str = instruction_str.substr(26, 32);
             bitset<6> opcode = bitset<6>(opcode_str); 
@@ -74,6 +74,9 @@ class Datapath {
                 if (funct_str == "001100") {
                     // SystemCall
                     instruction = new SystemCallInstruction();
+                } else if (funct_str == "001101") {
+                    // Break instruction
+                    throw BreakExecutionException("Execution stopped");
                 } else {
                     // R-Type instruction
                     bitset<5> rs = bitset<5>(instruction_str.substr(6, 11));
@@ -112,7 +115,7 @@ class Datapath {
             alu.setSrcA(PC);
             bitset<16> offset = bitset<16>(instruction->toString().substr(16, 32));
             alu.setSrcB(offset.to_ulong());
-            alu.setAluOperation(2);
+            alu.setAluOperation(SUM);
             ALUOut = alu.getResult();
         }
 
@@ -214,7 +217,7 @@ class Datapath {
                 // Inside ALUOut I have the new PC if the two registers are equal
                 alu.setSrcA(A);
                 alu.setSrcB(B);
-                alu.setAluOperation(6);
+                alu.setAluOperation(SUB);
                 if (alu.getResult() == 0) {
                     // The two registers are equal
                     this->PC = ALUOut;
@@ -261,7 +264,8 @@ class Datapath {
             return (lastTwoBits == "00");
         }
 
-        void handle() {
+        bool handle() {
+            bool canContinue = true;
             try {
                 throw;
             } catch(OverflowException e) {
@@ -270,7 +274,11 @@ class Datapath {
                 cout << "Invalid memory access exception detected and ignored" << endl;
             } catch(NotValidInstructionException e) {
                 cout << "Not valid instruction exception detected and ignored" << endl;
+            } catch(BreakExecutionException e) {
+                cout << "Execution stopped" << endl;
+                canContinue = false;
             }
+            return canContinue;
         }
 
     public:
@@ -295,18 +303,17 @@ class Datapath {
 
             loadProgramInMemory(instructionsBit);
             
-            registerFile.setReadRegister1(10);
-            
             // FIXME not realistic and doesn't work with BEQ
-            for(int i = 0; i < instructions.size(); i++) {
-                Instruction* fetched_instruction = fetchInstruction();
-                decodeInstruction(fetched_instruction);
+            bool canContinue = true;
+            do {
                 try {
+                    Instruction* fetched_instruction = fetchInstruction();
+                    decodeInstruction(fetched_instruction);
                     executeInstruction(fetched_instruction);
                 } catch(exception e) {
-                    handle();
+                    canContinue = handle();
                 }
-            }
+            } while (canContinue);
             
             cout << "Registers at the end of the execution" << endl << registerFile.toString() << endl;
         }
