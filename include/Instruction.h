@@ -172,4 +172,8 @@ class BranchOnEqualInstruction : public virtual Instruction {
 class SystemCallInstruction : public virtual Instruction {
     public:
         SystemCallInstruction() : Instruction(0) {}
+    
+        string toString() {
+            return "00000000000000000000000000001100";
+        }
 };

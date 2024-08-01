@@ -91,7 +91,6 @@ class Datapath {
                 instruction = new BranchOnEqualInstruction(rs.to_ulong(), rt.to_ulong(), offset.to_ulong());
             } else {
                 // I-Type instructions (the OPCODE is different for each instruction)
-                // TODO check before if it is lw/sw or beq
                 bitset<5> rs = bitset<5>(instruction_str.substr(6, 11));
                 bitset<5> rt = bitset<5>(instruction_str.substr(11, 16));
                 bitset<16> immediate = bitset<16>(instruction_str.substr(16, 32));
@@ -138,9 +137,11 @@ class Datapath {
                     case 0x2a:
                         alu.setAluOperation(SLT);
                         break;
+                    default:
+                        throw NotValidInstructionException("Not valid instruction");
+                        break;
                 }
                 int result = alu.getResult();
-                cout << A << " " << instruction->getFunct() << " " << B << " " << A+B;
                 writeResult(result, instruction->getRd());
             } else if (ITypeInstruction* i = dynamic_cast<ITypeInstruction*>(instruction)) {
                 bool isMemoryInstruction = false;
@@ -177,6 +178,9 @@ class Datapath {
                         // Load upper immediate instruction
                         alu.setShamt(16);
                         alu.setAluOperation(SLL);
+                        break;
+                    default:
+                        throw NotValidInstructionException("Not valid instruction");
                         break;
                 }
                 // FIXME the result shoudl be written inside the ALUOut register
@@ -215,6 +219,32 @@ class Datapath {
                     // The two registers are equal
                     this->PC = ALUOut;
                 }
+            } else if (SystemCallInstruction* i = dynamic_cast<SystemCallInstruction*>(instruction)) {
+                registerFile.setReadRegister1(2);
+                registerFile.setReadRegister2(4);
+                int syscallType = registerFile.getReadData1();
+                int param = registerFile.getReadData2();
+                switch (syscallType) {
+                    case 1: case 2: case 3:
+                        // print int
+                        cout << param << endl;
+                        break;
+                    case 4:
+                        // TODO implement print string
+                        break;
+                    case 5: case 6: case 7:
+                        int data;
+                        cin >> data;
+                        registerFile.setWriteRegister(4);
+                        registerFile.setWriteData(data);
+                        registerFile.write();
+                        break;
+                    case 8:
+                        // TODO implement read string
+                        break;
+                }
+            } else {
+                throw NotValidInstructionException("Not valid instruction");
             }
         }
 

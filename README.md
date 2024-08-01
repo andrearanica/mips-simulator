@@ -7,6 +7,14 @@ This software simulates the behaviour of the MIPS32 architecture with a multi-cy
 
 Attention: this projects simulates a subset of the MIPS32 ISA. The instructions that are implemented are: lw, sw, R-type, BEQ, J
 
+## How to use?
+The program should be made of rows of 32-bit instructions.To get the binary rapresentation of an instruction you can use <a href="https://www.eg.bucknell.edu/~csci320/mips_web/">this</a> website.
+
+## Supported instructions
+- R-Type: instructions that uses arithmetical-logical functions with registers
+- I-Type: instructions that manipulates registers using constant values (`addi`, `andi`, `ori`, `lw`, `sw`, `lui`)
+- System calls: read and print numbers
+
 ## Components
 The components that build a MIPS32 architecture are:
 - ALU: the arithmetic logic unit executes the basic mathemathics operations, like sum or subtraction, and some logic operations, like slt
@@ -72,6 +80,8 @@ The datapath contains all the components written before. It will do the followin
     - To understand if the instruction is a r-type, i-type, beq or lw/sw the software checks the opcode
         - if opcode == 0, r-type
         - if opcode == 4, beq
-        - if opcode == 0x2b, store word
-        - if opcode == 0x23, load word
         - else, it is a i-type
+            - if opcode == 0x2b, store word
+            - if opcode == 0x23, load word
+            - else, it is a normal I-type instruction
+- Handle: if the execute phase throws an exception, the datapath must handle the exception and continue or exit the program
