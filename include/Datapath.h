@@ -4,7 +4,6 @@
 #include <typeinfo>
 #include <sstream>
 #include "ALU.h"
-#include "ControlUnit.h"
 #include "Instruction.h"
 #include "Memory.h"
 #include "RegisterFile.h"
@@ -17,12 +16,12 @@ const int MAX_INSTRUCTIONS = 1000;
 const int TEXT_SEGMENT_START = 4194304;
 
 const string EMPTY_INSTRUCTION = "00000000000000000000000000000000";
+const string BREAK_INSTRUCTION = "00000000000000000000000000001101";
 
 class Datapath {
     private:
         int PC, A, B, ALUOut;
         ALU alu;
-        ControlUnit controlUnit;
         Memory memory;
         RegisterFile registerFile;
 
@@ -282,7 +281,7 @@ class Datapath {
         }
 
     public:
-        Datapath() : alu(), controlUnit(), memory(MEMORY_DIM) {
+        Datapath() : alu(), memory(MEMORY_DIM) {
             PC = TEXT_SEGMENT_START;
         }
 
@@ -293,6 +292,12 @@ class Datapath {
 
             while (getline(programStream, programRow)) {
                 instructions.push_back(programRow);
+            }
+            // If the last instruction isn't a break instruction, I add a break instruction
+            bitset<32> lastInstruction = bitset<32>(instructions.at(instructions.size()-1));
+            if (!isBreakInstruction(lastInstruction)) {
+                cout << "Aggiungo break" << endl;
+                instructions.push_back(BREAK_INSTRUCTION);
             }
             vector<bitset<32>> instructionsBit;            
 
@@ -305,6 +310,7 @@ class Datapath {
             
             // FIXME not realistic and doesn't work with BEQ
             bool canContinue = true;
+            int i = 0;
             do {
                 try {
                     Instruction* fetched_instruction = fetchInstruction();
@@ -313,8 +319,17 @@ class Datapath {
                 } catch(exception e) {
                     canContinue = handle();
                 }
-            } while (canContinue);
+                i += 1;
+            } while (canContinue && i <= MAX_INSTRUCTIONS);
             
             cout << "Registers at the end of the execution" << endl << registerFile.toString() << endl;
+        }
+
+        RegisterFile getRegisterFile() {
+            return registerFile;
+        }
+
+        Memory getMemory() {
+            return memory;
         }
 };

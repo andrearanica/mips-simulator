@@ -36,3 +36,14 @@ void getOperationType(int functCode) {
     functCodes[0x22] = "sub";
     // TODO add other operations
 }
+
+void printHeader() {
+    cout << "-------------------------" << endl;
+    cout << "|    MIPS SIMULATOR     |" << endl;
+    cout << "-------------------------" << endl;
+}
+
+bool isBreakInstruction(bitset<32> instruction) {
+    string instruction_str = bitset<32>(instruction).to_string();
+    return instruction_str.substr(0, 6) == "000000" && instruction_str.substr(26, 32) == "001101";
+}

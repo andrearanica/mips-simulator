@@ -5,7 +5,6 @@ using namespace std;
 
 int main() {
     Datapath* datapath = new Datapath();
-
     string filePath = "./program.txt";
     
     ifstream fileReader(filePath);
