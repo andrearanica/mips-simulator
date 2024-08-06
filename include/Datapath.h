@@ -204,12 +204,25 @@ class Datapath {
                         registerFile.setWriteData(memoryData);
                         registerFile.write();
                     } else {
-                        // It is a store word instruction
+                        // It is a store word instruction: I store the LSB in the first address
                         memory.setAddress(result);
                         registerFile.setReadRegister1(instruction->getRt());
-                        int dataToWrite = registerFile.getReadData1();
-                        memory.setWriteData(dataToWrite);
-                        memory.write();
+                        string dataToWrite = bitset<32>(registerFile.getReadData1()).to_string();
+                        
+                        vector<bitset<8>> bytes = {
+                            bitset<8>(dataToWrite.substr(24, 32)),
+                            bitset<8>(dataToWrite.substr(16, 24)),
+                            bitset<8>(dataToWrite.substr(8, 16)),
+                            bitset<8>(dataToWrite.substr(0, 8))
+                        };
+
+                        int address = result;
+                        for(int i = 0; i < 4; i++) {
+                            memory.setWriteData(bytes.at(i).to_ulong());
+                            memory.setAddress(address);
+                            memory.write();
+                            address += 1;
+                        }
                     }
                 }
             } else if (BranchOnEqualInstruction* i = dynamic_cast<BranchOnEqualInstruction*>(instruction)) {
@@ -274,7 +287,6 @@ class Datapath {
             } catch(NotValidInstructionException e) {
                 cout << "Not valid instruction exception detected and ignored" << endl;
             } catch(BreakExecutionException e) {
-                cout << "Execution stopped" << endl;
                 canContinue = false;
             }
             return canContinue;
@@ -285,7 +297,7 @@ class Datapath {
             PC = TEXT_SEGMENT_START;
         }
 
-        void run(string program) {
+        void run(string program, bool showRegisters=false) {
             vector<string> instructions;
             stringstream programStream(program);
             string programRow = "";
@@ -296,7 +308,6 @@ class Datapath {
             // If the last instruction isn't a break instruction, I add a break instruction
             bitset<32> lastInstruction = bitset<32>(instructions.at(instructions.size()-1));
             if (!isBreakInstruction(lastInstruction)) {
-                cout << "Aggiungo break" << endl;
                 instructions.push_back(BREAK_INSTRUCTION);
             }
             vector<bitset<32>> instructionsBit;            
@@ -322,7 +333,9 @@ class Datapath {
                 i += 1;
             } while (canContinue && i <= MAX_INSTRUCTIONS);
             
-            cout << "Registers at the end of the execution" << endl << registerFile.toString() << endl;
+            if (showRegisters) {
+                cout << "Registers at the end of the execution" << endl << registerFile.toString() << endl;
+            }
         }
 
         RegisterFile getRegisterFile() {

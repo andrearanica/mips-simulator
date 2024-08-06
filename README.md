@@ -5,8 +5,6 @@ This software simulates the behaviour of the MIPS32 architecture with a multi-cy
 - Decode: the Control Unit understands what is the instruction type
 - Execute: the CPU executes the instruction
 
-Attention: this projects simulates a subset of the MIPS32 ISA. The instructions that are implemented are: lw, sw, R-type, BEQ, J
-
 ## How to use?
 This simulator takes a file made by 32-bits instructions organized in rows, like the following. *Important*: the last row of the file must be the `break` operation, to prevent the simulator to continue fetching the instruction from the memory.
 
@@ -23,8 +21,17 @@ This simulator takes a file made by 32-bits instructions organized in rows, like
 
 To get the binary rapresentation of an instruction you can use <a href="https://www.eg.bucknell.edu/~csci320/mips_web/">this</a> website.
 
+### CMake
+You need to run the following commands to get the executable file `build/mips-simulator`
+``` bash
+mkdir build
+cd build
+cmake ..
+make
+```
+
 ## Supported instructions
-- R-Type: instructions that uses arithmetical-logical functions with registers
+- R-Type: instructions that uses arithmetical-logical functions with registers (`add`, `sub`, `and`, `or`, `slt`)
 - I-Type: instructions that manipulates registers using constant values (`addi`, `andi`, `ori`, `lw`, `sw`, `lui`)
 - System calls: read and print numbers
 
