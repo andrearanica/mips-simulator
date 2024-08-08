@@ -20,3 +20,8 @@ class BreakExecutionException : public runtime_error {
     public:
         BreakExecutionException(string message) : runtime_error(message) {}
 };
+
+class ProgramException : public runtime_error {
+    public:
+        ProgramException(string message) : runtime_error(message) {}
+};

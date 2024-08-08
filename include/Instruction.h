@@ -169,6 +169,21 @@ class BranchOnEqualInstruction : public virtual Instruction {
         }
 };
 
+class JumpInstruction : public virtual Instruction {
+    private:
+        int target;
+    
+    public:
+        JumpInstruction(int target) : Instruction(2) {
+            // The target is expressed in 26 bits but needs to be converted into 32 bits
+            this->target = target;
+        }
+
+        int getTarget() {
+            return target;
+        }
+};
+
 class SystemCallInstruction : public virtual Instruction {
     public:
         SystemCallInstruction() : Instruction(0) {}

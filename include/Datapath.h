@@ -91,6 +91,10 @@ class Datapath {
                 bitset<5> rt = bitset<5>(instruction_str.substr(11, 16));
                 bitset<16> offset = bitset<16>(instruction_str.substr(16, 32));
                 instruction = new BranchOnEqualInstruction(rs.to_ulong(), rt.to_ulong(), offset.to_ulong());
+            } else if (opcode_str == "000010") {
+                // Jump instruction
+                bitset<26> target = bitset<26>(instruction_str.substr(6, 26));
+                instruction = new JumpInstruction(target.to_ulong());
             } else {
                 // I-Type instructions (the OPCODE is different for each instruction)
                 bitset<5> rs = bitset<5>(instruction_str.substr(6, 11));
@@ -234,6 +238,10 @@ class Datapath {
                     // The two registers are equal
                     this->PC = ALUOut;
                 }
+            } else if (JumpInstruction* i = dynamic_cast<JumpInstruction*>(instruction)) {
+                string new_target = bitset<26>(i->getTarget()).to_string();
+                new_target = to_string(PC).substr(0, 4) + new_target + "00";
+                this->PC = bitset<32>(new_target).to_ulong();
             } else if (SystemCallInstruction* i = dynamic_cast<SystemCallInstruction*>(instruction)) {
                 registerFile.setReadRegister1(2);
                 registerFile.setReadRegister2(4);
@@ -297,14 +305,7 @@ class Datapath {
             PC = TEXT_SEGMENT_START;
         }
 
-        void run(string program, bool showRegisters=false) {
-            vector<string> instructions;
-            stringstream programStream(program);
-            string programRow = "";
-
-            while (getline(programStream, programRow)) {
-                instructions.push_back(programRow);
-            }
+        void run(vector<string> instructions, bool showRegisters=false) {
             // If the last instruction isn't a break instruction, I add a break instruction
             bitset<32> lastInstruction = bitset<32>(instructions.at(instructions.size()-1));
             if (!isBreakInstruction(lastInstruction)) {
