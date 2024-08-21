@@ -1,9 +1,9 @@
-from constants import N_REGISTERS
+from .constants import N_REGISTERS
 
 
 class RegisterFile:
     def __init__(self) -> None:
-        self.__registers = []
+        self.__registers = [0] * N_REGISTERS
         self.__initialize_registers()
 
 

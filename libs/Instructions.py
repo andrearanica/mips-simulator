@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from exceptions import NotValidInstructionException
-from utils import int_to_bits
+from .exceptions import NotValidInstructionException
+from .utils import int_to_bits
 
 # TODO implement MIN_INT and MAX_INT in setters
 
@@ -95,7 +95,7 @@ class RTypeInstruction(RegisterInstruction):
 
 
     def __str__(self) -> str:
-        return f"{int_to_bits(self.opcode)}{int_to_bits(self.rs)}{int_to_bits(self.rt)}{int_to_bits(self.rd)}{int_to_bits(self.funct)}"
+        return f"{int_to_bits(self.opcode, 6)}{int_to_bits(self.rs, 5)}{int_to_bits(self.rt, 5)}{int_to_bits(self.rd, 5)}{int_to_bits(self.shamt, 5)}{int_to_bits(self.funct, 6)}"
 
 
 class ITypeInstruction(RegisterInstruction):
@@ -117,7 +117,7 @@ class ITypeInstruction(RegisterInstruction):
     
 
     def __str__(self) -> str:
-        return f"{int_to_bits(self.opcode)}{int_to_bits(self.rs)}{int_to_bits(self.rt)}{int_to_bits(self.immediate)}"
+        return f"{int_to_bits(self.opcode, 6)}{int_to_bits(self.rs, 5)}{int_to_bits(self.rt, 5)}{int_to_bits(self.immediate, 16)}"
 
 
 class BranchOnEqualInstruction(RegisterInstruction):
@@ -139,7 +139,7 @@ class BranchOnEqualInstruction(RegisterInstruction):
 
 
     def __str__(self) -> str:
-        return f"{int_to_bits(self.opcode)}{int_to_bits(self.rs)}{int_to_bits(self.rt)}{int_to_bits(self.offset)}"
+        return f"{int_to_bits(self.opcode, 6)}{int_to_bits(self.rs, 5)}{int_to_bits(self.rt, 5)}{int_to_bits(self.offset, 16)}"
 
 
 class JumpInstruction(Instruction):

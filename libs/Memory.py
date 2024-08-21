@@ -1,9 +1,9 @@
-from constants import MIN_INT, MAX_INT
+from .constants import MIN_INT, MAX_INT
 
 class Memory:
     def __init__(self, size: int) -> None:
         self.__size = size
-        self.__data = []
+        self.__data = [0] * self.__size
     
 
     @property
@@ -23,7 +23,7 @@ class Memory:
     
 
     def write_data(self, data: int, address: int) -> None:
-        self.data[address] = data
+        self.__data[address] = data
 
 
     def __str__(self) -> str:
