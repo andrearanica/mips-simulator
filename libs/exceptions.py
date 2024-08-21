@@ -1,0 +1,2 @@
+class NotValidInstructionException(Exception):
+    pass
