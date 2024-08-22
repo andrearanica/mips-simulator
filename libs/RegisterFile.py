@@ -25,5 +25,5 @@ class RegisterFile:
     def __str__(self) -> str:
         result = ''
         for register_number, register_value in enumerate(self.__registers):
-            result += register_number + ' | ' + register_value
+            result += f'{register_number} | {register_value}\n'
         return result

@@ -173,3 +173,9 @@ class SystemCallInstruction(Instruction):
     
     def __str__(self) -> str:
         return "00000000000000000000000000001100"
+    
+class MemoryInstruction(ITypeInstruction):
+    """ Instruction that loads or writes in the memory
+    """
+    def __init__(self, opcode: int, rs: int, rt: int, immediate: int) -> None:
+        super().__init__(opcode, rs, rt, immediate)

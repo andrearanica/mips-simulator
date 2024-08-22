@@ -16,10 +16,8 @@ class ALU:
     
 
     @src_a.setter
-    def src_a(self, src_a):
-        if not src_a in getattr(AluOperations):
-            raise NotValidInstructionException("Not valid ALU operation")
-        self.src_a = src_a
+    def src_a(self, src_a) -> None:
+        self.__src_a = src_a
 
 
     @property
@@ -28,29 +26,32 @@ class ALU:
 
 
     @src_b.setter
-    def src_b(self, src_b):
-        if not src_b in getattr(AluOperations):
-            raise NotValidInstructionException("Not valid ALU operation")
-        self.src_b = src_b
-
-
-    def set_src_a(self, src_a: int) -> None:
-        self.__src_a = src_a
-    
-
-    def set_src_b(self, src_b: int) -> None:
+    def src_b(self, src_b: int) -> None:
         self.__src_b = src_b
     
 
-    def set_alu_operation(self, alu_operation: int) -> None:
-        self.__alu_operation = alu_operation
-    
+    @property
+    def alu_operation(self) -> int:
+        return self.__alu_operation
 
-    def set_shamt(self, shamt: int) -> None:
+
+    @alu_operation.setter
+    def alu_operation(self, alu_operation: int) -> None:
+        # FIXME check if the operation is inside AluOperations
+        self.__alu_operation = alu_operation
+
+    
+    @property
+    def shamt(self) -> int:
+        return self.__shamt
+    
+    
+    @shamt.setter
+    def shamt(self, shamt: int) -> None:
         self.__shamt = shamt
     
     
-    def getResult(self) -> int:
+    def get_result(self) -> int:
         """ Returns the result of the set operation
         """
         result = 0
