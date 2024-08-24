@@ -5,7 +5,7 @@ from .RegisterFile import RegisterFile
 from .Instructions import Instruction, RTypeInstruction, ITypeInstruction, SystemCallInstruction, BranchOnEqualInstruction, JumpInstruction
 from .constants import MEMORY_DIM, BREAK_INSTRUCTION, TEXT_SEGMENT_START
 from .exceptions import NotValidInstructionException, BreakException
-from .utils import is_break_instruction, int_to_bits, bits_to_int
+from .utils import is_break_instruction, int_to_bits, bits_to_int, is_address_valid
 
 class Datapath:
     def __init__(self) -> None:
@@ -17,6 +17,13 @@ class Datapath:
         self.__memory = Memory(MEMORY_DIM)
         self.__register_file = RegisterFile()
 
+    @property
+    def memory(self) -> Memory:
+        return self.__memory
+    
+    @property
+    def register_file(self) -> RegisterFile:
+        return self.__register_file
     
     def run(self, instructions: list) -> None:
         """ Executes the passed instructions
@@ -39,7 +46,7 @@ class Datapath:
                 # FIXME add exception handler
                 can_continue = False
         
-        print(self.__register_file)
+        # print(self.__register_file)
 
     def __load_program_in_memory(self, instructions: list) -> None:
         """ Loads the instructions inside the memory, starting from the text segment address
@@ -193,16 +200,36 @@ class Datapath:
         else:
             raise NotValidInstructionException(f'Instruction {instruction} not implemented')
 
-        # FIXME instead of checking if it is a memory instruction, the fetch_instruction
-        # function should return an instance of a new MemoryInstruction class
         result = self.__alu.get_result()
         if not is_memory_instruction:
             self.__register_file.write(result, instruction.rt)
         else:
-            self.__execute_memory_instruction(instruction)
+            # If it is a memory instruction, the result is the address of the memory
+            self.__execute_memory_instruction(instruction, result)
 
 
-    def __execute_memory_instruction(self, instruction: ITypeInstruction):
+    def __execute_memory_instruction(self, instruction: ITypeInstruction, address: int):
         """ Writes or loads information from the memory
         """
-        pass
+        if not is_address_valid(address):
+            raise RuntimeError(f'Address {address} is not aligned to the word')
+        
+        if instruction.opcode == 0x23:
+            # Load word
+            memory_data = self.memory.get_data(address)
+            self.register_file.write(memory_data, instruction.rt)
+        else:
+            # Store word
+            data_to_write = self.register_file.get_register(instruction.rt)
+            data_to_write_str = str(data_to_write)
+
+            bytes = [
+                data_to_write_str[24:32],
+                data_to_write_str[16:24],
+                data_to_write_str[8:16],
+                data_to_write_str[0:8]
+            ]
+
+            for i in range(4):
+                self.memory.write_data(bytes[i], address)
+                address += 1
