@@ -28,7 +28,7 @@ class Simulator:
         return self.__instructions
     
     @instructions.setter
-    def instructions(self, instructions) -> None:
+    def instructions(self, instructions: list) -> None:
         for instruction in instructions:
             if not utils.is_valid_instruction(instruction):
                 raise RuntimeError(f'Instruction {instruction} is not a valid instruction')

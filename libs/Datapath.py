@@ -211,6 +211,8 @@ class Datapath:
     def __execute_memory_instruction(self, instruction: ITypeInstruction, address: int):
         """ Writes or loads information from the memory
         """
+        print(f'Store word in {address}')
+        
         if not is_address_valid(address):
             raise RuntimeError(f'Address {address} is not aligned to the word')
         

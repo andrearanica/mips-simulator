@@ -31,4 +31,4 @@ def is_address_valid(address: int):
     """ Returns if the address is aligned to the word (last 00 bits)
     """
     address_in_bits = int_to_bits(address)
-    return address_in_bits[len(address_in_bits-2):len(address_in_bits)]
+    return address_in_bits[len(address_in_bits)-2:len(address_in_bits)]
