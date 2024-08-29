@@ -40,9 +40,8 @@ class LuiWordTest(DatapathTest):
         self.assertEqual(t0_register, 0x10000000)
 
 
-class StoreWordTest(DatapathTest):
+class MemoryTest(DatapathTest):
     def test(self):
-        print('00100001000010000001000000000000')
         self.simulator.instructions = [
             '00111100000010000001000000000000',         # lui $t0, 0x1000
             '00100001000010000001000000000000',         # addi $t0, $t0, 0x1000
@@ -50,6 +49,8 @@ class StoreWordTest(DatapathTest):
             '10101101000010010000000000000000'          # sw $t1, 0x0($t0)
         ]
         self.simulator.run()
+        t0_register = self.simulator.datapath.register_file.get_register(8)
+        self.assertEqual(t0_register, 0x10001000)
         memory_content = self.simulator.datapath.memory.get_data(0x10001000)
         self.assertEqual(memory_content, 2)
 

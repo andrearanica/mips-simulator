@@ -14,7 +14,7 @@ class Datapath:
         self.__B = 0
         self.__alu = ALU()
         self.__alu_out = 0
-        self.__memory = Memory(MEMORY_DIM)
+        self.__memory = Memory()
         self.__register_file = RegisterFile()
 
     @property
@@ -211,8 +211,6 @@ class Datapath:
     def __execute_memory_instruction(self, instruction: ITypeInstruction, address: int):
         """ Writes or loads information from the memory
         """
-        print(f'Store word in {address}')
-        
         if not is_address_valid(address):
             raise RuntimeError(f'Address {address} is not aligned to the word')
         
@@ -223,13 +221,14 @@ class Datapath:
         else:
             # Store word
             data_to_write = self.register_file.get_register(instruction.rt)
-            data_to_write_str = str(data_to_write)
+            print(data_to_write)
+            data_to_write_str = str(int_to_bits(data_to_write, 32))
 
             bytes = [
-                data_to_write_str[24:32],
-                data_to_write_str[16:24],
-                data_to_write_str[8:16],
-                data_to_write_str[0:8]
+                bits_to_int(data_to_write_str[24:32]),
+                bits_to_int(data_to_write_str[16:24]),
+                bits_to_int(data_to_write_str[8:16]),
+                bits_to_int(data_to_write_str[0:8])
             ]
 
             for i in range(4):
