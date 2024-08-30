@@ -1,6 +1,6 @@
 import unittest
 
-from libs.Simulator import Simulator
+from libs.simulator import Simulator
 
 
 class DatapathTest(unittest.TestCase):

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from .exceptions import NotValidInstructionException
-from .utils import int_to_bits
+from libs.exceptions import NotValidInstructionException
+from libs.utils import int_to_bits
 
 # TODO implement MIN_INT and MAX_INT in setters
 

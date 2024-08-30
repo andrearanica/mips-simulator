@@ -1,4 +1,4 @@
-from .constants import MIN_INT, MAX_INT, DATA_SEGMENT_START, TEXT_SEGMENT_START
+from libs.constants import MIN_INT, MAX_INT, DATA_SEGMENT_START, TEXT_SEGMENT_START
 
 class Memory:
     def __init__(self) -> None:
@@ -17,6 +17,7 @@ class Memory:
         self.__write_data = write_data
 
     def get_data(self, address: int) -> int:
+        # FIXME use a dictionary instead of lists
         if TEXT_SEGMENT_START <= address < DATA_SEGMENT_START:
             # Get data from text segment
             local_address = address-TEXT_SEGMENT_START

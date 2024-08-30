@@ -1,7 +1,9 @@
-from libs.Simulator import Simulator
+import tkinter as tk
+
+from gui.main_dialog import MainDialog
+from libs.simulator import Simulator
 
 if __name__ == '__main__':
-    simulator = Simulator()
-    file_path = input('Insert file path: ')
-    simulator.file_path = file_path
-    simulator.run()
+    root = tk.Tk()
+    dialog = MainDialog(root)
+    root.mainloop()

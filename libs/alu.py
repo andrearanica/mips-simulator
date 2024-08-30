@@ -1,6 +1,6 @@
-from .AluOperations import AluOperations
-from .constants import MAX_INT, MIN_INT
-from .exceptions import NotValidInstructionException
+from libs.alu_operations import AluOperations
+from libs.constants import MAX_INT, MIN_INT
+from libs.exceptions import NotValidInstructionException
 
 class ALU:
     def __init__(self) -> None:

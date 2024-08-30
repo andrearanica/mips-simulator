@@ -1,7 +1,7 @@
 import os
-from . import utils
+from libs import utils
 
-from .Datapath import Datapath
+from libs.datapath import Datapath
 
 class Simulator:
     def __init__(self) -> None:
@@ -40,3 +40,6 @@ class Simulator:
 
     def run(self):
         self.datapath.run(self.instructions)        
+
+    def reset(self):
+        self.__init__()

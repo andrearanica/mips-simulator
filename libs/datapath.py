@@ -1,11 +1,11 @@
-from .ALU import ALU
-from .AluOperations import AluOperations
-from .Memory import Memory
-from .RegisterFile import RegisterFile
-from .Instructions import Instruction, RTypeInstruction, ITypeInstruction, SystemCallInstruction, BranchOnEqualInstruction, JumpInstruction
-from .constants import MEMORY_DIM, BREAK_INSTRUCTION, TEXT_SEGMENT_START
-from .exceptions import NotValidInstructionException, BreakException
-from .utils import is_break_instruction, int_to_bits, bits_to_int, is_address_valid
+from libs.alu import ALU
+from libs.alu_operations import AluOperations
+from libs.memory import Memory
+from libs.register_file import RegisterFile
+from libs.instructions import Instruction, RTypeInstruction, ITypeInstruction, SystemCallInstruction, BranchOnEqualInstruction, JumpInstruction
+from libs.constants import MEMORY_DIM, BREAK_INSTRUCTION, TEXT_SEGMENT_START
+from libs.exceptions import NotValidInstructionException, BreakException
+from libs.utils import is_break_instruction, int_to_bits, bits_to_int, is_address_valid
 
 class Datapath:
     def __init__(self) -> None:

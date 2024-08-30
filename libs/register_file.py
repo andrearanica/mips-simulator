@@ -1,4 +1,4 @@
-from .constants import N_REGISTERS
+from libs.constants import N_REGISTERS
 
 
 class RegisterFile:
@@ -6,11 +6,13 @@ class RegisterFile:
         self.__registers = [0] * N_REGISTERS
         self.__initialize_registers()
 
-
     def __initialize_registers(self):
         for i in range(len(self.__registers)):
             self.__registers[i] = 0
-    
+
+    @property
+    def registers(self) -> list:
+        return self.__registers
 
     def get_register(self, register: int):
         if register < 0 or register > N_REGISTERS:
