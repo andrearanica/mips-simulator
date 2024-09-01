@@ -39,6 +39,7 @@ class Simulator:
         return self.__datapath
 
     def run(self):
+        print(f'Running {self.instructions}')
         self.datapath.run(self.instructions)        
 
     def reset(self):

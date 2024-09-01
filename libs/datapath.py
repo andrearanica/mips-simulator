@@ -45,8 +45,6 @@ class Datapath:
             except BreakException:
                 # FIXME add exception handler
                 can_continue = False
-        
-        # print(self.__register_file)
 
     def __load_program_in_memory(self, instructions: list) -> None:
         """ Loads the instructions inside the memory, starting from the text segment address
@@ -221,7 +219,6 @@ class Datapath:
         else:
             # Store word
             data_to_write = self.register_file.get_register(instruction.rt)
-            print(data_to_write)
             data_to_write_str = str(int_to_bits(data_to_write, 32))
 
             bytes = [
