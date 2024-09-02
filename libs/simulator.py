@@ -1,6 +1,6 @@
 import os
-from libs import utils
 
+from libs import utils, constants
 from libs.datapath import Datapath
 
 class Simulator:
@@ -15,11 +15,12 @@ class Simulator:
     
     @file_path.setter
     def file_path(self, file_path: str) -> None:
-        if os.path.exists(file_path):
+        if os.path.exists(file_path) or not file_path:
             self.__file_path = file_path
-            with open(self.__file_path, 'r+') as file_reader:
-                file_content = file_reader.read()
-                self.instructions = [row.strip() for row in file_content.split('\n')]
+            if file_path:
+                with open(self.__file_path, 'r+') as file_reader:
+                    file_content = file_reader.read()
+                    self.instructions = [row.strip() for row in file_content.split('\n')]
         else:
             raise RuntimeError(f'File {file_path} doesn\'t exist')
     
@@ -32,6 +33,9 @@ class Simulator:
         for instruction in instructions:
             if not utils.is_valid_instruction(instruction):
                 raise RuntimeError(f'Instruction {instruction} is not a valid instruction')
+        last_instruction = instructions[::-1]
+        if not utils.is_break_instruction(last_instruction):
+            instructions.append(constants.BREAK_INSTRUCTION)
         self.__instructions = instructions
     
     @property
@@ -39,8 +43,10 @@ class Simulator:
         return self.__datapath
 
     def run(self):
-        print(f'Running {self.instructions}')
-        self.datapath.run(self.instructions)        
+        if self.instructions:
+            self.datapath.run(self.instructions)        
 
     def reset(self):
-        self.__init__()
+        self.file_path = ''
+        self.instructions = []
+        self.__datapath = Datapath()

@@ -13,7 +13,6 @@ class Datapath:
         self.__A = 0
         self.__B = 0
         self.__alu = ALU()
-        self.__alu_out = 0
         self.__memory = Memory()
         self.__register_file = RegisterFile()
 
@@ -28,10 +27,6 @@ class Datapath:
     def run(self, instructions: list) -> None:
         """ Executes the passed instructions
         """
-        last_instruction = instructions[::-1]
-        if not is_break_instruction(last_instruction):
-            instructions.append(BREAK_INSTRUCTION)
-        
         self.__load_program_in_memory(instructions)
 
         can_continue = True
@@ -65,7 +60,6 @@ class Datapath:
                 # TODO
                 self.__memory.write_data(bits_to_int(byte), address_to_write)
                 address_to_write += 1
-    
 
     def __fetch_instruction(self):
         """ Reads from the memory the instruction stored at the PC
@@ -82,7 +76,6 @@ class Datapath:
 
         # After the instruction has been fetched, I get the opcode to understand the type of the instruction (R-Type, I-Type...)
         return self.__get_instruction_object(instruction)
-    
 
     def __get_instruction_object(self, instruction: str):
         opcode = instruction[0:6]
@@ -120,7 +113,6 @@ class Datapath:
 
         return instruction_obj
 
-
     def __decode_instruction(self, instruction: Instruction):
         if hasattr(instruction, 'rs') and hasattr(instruction, 'rt'):
             rs = instruction.rs
@@ -133,8 +125,6 @@ class Datapath:
         self.__alu.src_a = self.__PC
         self.__alu.src_b = bits_to_int(offset)
         self.__alu.alu_operation = AluOperations.SUM
-        self.__alu_out = self.__alu.get_result()
-
 
     def __execute_instruction(self, instruction: Instruction):
         """ Executes the instruction depending on its type
@@ -151,7 +141,6 @@ class Datapath:
             pass
         else:
             raise NotValidInstructionException("Error trying to execute a not valid instruction")
-
     
     def __execute_rtype_instruction(self, instruction: RTypeInstruction):
         # The R-Type instructions use the two temp registers as ALU inputs
@@ -204,7 +193,6 @@ class Datapath:
         else:
             # If it is a memory instruction, the result is the address of the memory
             self.__execute_memory_instruction(instruction, result)
-
 
     def __execute_memory_instruction(self, instruction: ITypeInstruction, address: int):
         """ Writes or loads information from the memory
