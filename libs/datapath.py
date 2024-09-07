@@ -24,29 +24,41 @@ class Datapath:
     def register_file(self) -> RegisterFile:
         return self.__register_file
     
-    def run(self, instructions: list) -> None:
-        """ Executes the passed instructions
-        """
-        self.__load_program_in_memory(instructions)
+    @property
+    def PC(self) -> int:
+        return self.__PC
 
-        can_continue = True
+    def run(self) -> None:
         i = 0
+        can_continue = True
+
         while can_continue:
             try:
-                fetched_instruction = self.__fetch_instruction()
-                self.__decode_instruction(fetched_instruction)
-                self.__execute_instruction(fetched_instruction)
+                self.__run_instruction()
                 i += 1
             except BreakException:
                 # FIXME add exception handler
                 can_continue = False
 
-    def __load_program_in_memory(self, instructions: list) -> None:
+    def run_single_instruction(self):
+        self.__run_instruction()
+            
+    def __run_instruction(self):
+        """ Executes the instruction that is stored inside the PC
+        """
+        fetched_instruction = self.__fetch_instruction()
+        self.__decode_instruction(fetched_instruction)
+        self.__execute_instruction(fetched_instruction)
+
+    def load_program_in_memory(self, instructions: list) -> None:
         """ Loads the instructions inside the memory, starting from the text segment address
             and using the little endian encoding (less significative byte is stored as first
             byte of the word)
         """
         address_to_write = TEXT_SEGMENT_START
+        if not BREAK_INSTRUCTION in instructions:
+            instructions.append(BREAK_INSTRUCTION)
+        
         for instruction in instructions:
             # I store in an array the bytes that compose the instruction
             bytes = [
