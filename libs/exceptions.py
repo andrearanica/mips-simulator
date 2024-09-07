@@ -3,3 +3,6 @@ class NotValidInstructionException(Exception):
 
 class BreakException(Exception):
     pass
+
+class EmptyInstructionException(Exception):
+    pass

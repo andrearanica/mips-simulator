@@ -8,48 +8,43 @@ class ALU:
         self.__src_b = 0
         self.__alu_operation = 0
         self.__shamt = 0
-    
 
     @property
     def src_a(self) -> int:
-        return self.__src_a
-    
+        return self.__src_a    
 
     @src_a.setter
     def src_a(self, src_a) -> None:
         self.__src_a = src_a
 
-
     @property
     def src_b(self) -> int:
         return self.__src_b
 
-
     @src_b.setter
     def src_b(self, src_b: int) -> None:
         self.__src_b = src_b
-    
 
     @property
     def alu_operation(self) -> int:
         return self.__alu_operation
 
-
     @alu_operation.setter
     def alu_operation(self, alu_operation: int) -> None:
         # FIXME check if the operation is inside AluOperations
         self.__alu_operation = alu_operation
-
     
     @property
     def shamt(self) -> int:
         return self.__shamt
     
-    
     @shamt.setter
     def shamt(self, shamt: int) -> None:
         self.__shamt = shamt
-    
+
+    @property
+    def zero(self) -> int:
+        return (self.src_a - self.src_b) == 0
     
     def get_result(self) -> int:
         """ Returns the result of the set operation

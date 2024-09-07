@@ -4,7 +4,7 @@ from libs.memory import Memory
 from libs.register_file import RegisterFile
 from libs.instructions import Instruction, RTypeInstruction, ITypeInstruction, SystemCallInstruction, BranchOnEqualInstruction, JumpInstruction
 from libs.constants import MEMORY_DIM, BREAK_INSTRUCTION, TEXT_SEGMENT_START
-from libs.exceptions import NotValidInstructionException, BreakException
+from libs.exceptions import NotValidInstructionException, BreakException, EmptyInstructionException
 from libs.utils import is_break_instruction, int_to_bits, bits_to_int, is_address_valid
 
 class Datapath:
@@ -15,6 +15,7 @@ class Datapath:
         self.__alu = ALU()
         self.__memory = Memory()
         self.__register_file = RegisterFile()
+        self.__alu_out = 0
 
     @property
     def memory(self) -> Memory:
@@ -31,18 +32,28 @@ class Datapath:
     def run(self) -> None:
         i = 0
         can_continue = True
+        n_empty_instructions = 0
 
-        while can_continue:
+        while can_continue and n_empty_instructions < 5:
             try:
                 self.__run_instruction()
+                n_empty_instructions = 0
                 i += 1
+            except EmptyInstructionException:
+                n_empty_instructions += 1
+                pass
             except BreakException:
                 # FIXME add exception handler
                 can_continue = False
 
     def run_single_instruction(self):
-        self.__run_instruction()
-            
+        try:
+            self.__run_instruction()
+        except EmptyInstructionException:
+            pass
+        except BreakException:
+            pass
+
     def __run_instruction(self):
         """ Executes the instruction that is stored inside the PC
         """
@@ -69,7 +80,6 @@ class Datapath:
             ]
             
             for byte in bytes:
-                # TODO
                 self.__memory.write_data(bits_to_int(byte), address_to_write)
                 address_to_write += 1
 
@@ -77,14 +87,18 @@ class Datapath:
         """ Reads from the memory the instruction stored at the PC
         """
         address = self.__PC
+
         self.__PC += 4
         instruction = ''
 
         # I read from the memory the 4 bytes that make the instruction
-        for i in range(4):
+        for _ in range(4):
             instruction_part = self.__memory.get_data(address)
             instruction = int_to_bits(instruction_part, 8) + instruction
             address += 1
+
+        if not int(instruction):
+            raise EmptyInstructionException()
 
         # After the instruction has been fetched, I get the opcode to understand the type of the instruction (R-Type, I-Type...)
         return self.__get_instruction_object(instruction)
@@ -137,6 +151,7 @@ class Datapath:
         self.__alu.src_a = self.__PC
         self.__alu.src_b = bits_to_int(offset)
         self.__alu.alu_operation = AluOperations.SUM
+        self.__alu_out = self.__alu.get_result()
 
     def __execute_instruction(self, instruction: Instruction):
         """ Executes the instruction depending on its type
@@ -146,9 +161,9 @@ class Datapath:
         elif isinstance(instruction, ITypeInstruction):
             self.__execute_itype_instruction(instruction)
         elif isinstance(instruction, BranchOnEqualInstruction):
-            pass
+            self.__execute_beq_instruction(instruction)
         elif isinstance(instruction, JumpInstruction):
-            pass
+            self.__execute_jump_instruction(instruction)
         elif isinstance(instruction, SystemCallInstruction):
             pass
         else:
@@ -231,3 +246,18 @@ class Datapath:
             for i in range(4):
                 self.memory.write_data(bytes[i], address)
                 address += 1
+    
+    def __execute_beq_instruction(self, instruction: BranchOnEqualInstruction):
+        self.__alu.src_a = self.__A
+        self.__alu.src_b = self.__B
+
+        are_registers_equal = self.__alu.zero
+        
+        if are_registers_equal:
+            new_address = self.__alu_out
+            self.__PC = new_address
+    
+    def __execute_jump_instruction(self, instruction: JumpInstruction):
+        # The new PC is formed by the last 26 bits of the instruction
+        # shifted left and the 4 upper bits of the current PC
+        address = str(instruction.target)

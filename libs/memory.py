@@ -20,12 +20,16 @@ class Memory:
         if address != None:
             if TEXT_SEGMENT_START <= address < DATA_SEGMENT_START:
                 # Get data from text segment
-                return self.__text_segment.get(address)
+                read_data = self.__text_segment.get(address)
             elif DATA_SEGMENT_START <= address:
                 # Get data from data segment
-                return self.__data_segment.get(address)
+                read_data = self.__data_segment.get(address)
             else:
                 raise RuntimeError(f'Error trying to read memory address {address}')
+            if read_data != None:
+                return read_data
+            else:
+                return 0
         else:
             memory_dict = {}
             memory_dict.update(self.__text_segment)
