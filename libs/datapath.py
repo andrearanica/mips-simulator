@@ -260,4 +260,5 @@ class Datapath:
     def __execute_jump_instruction(self, instruction: JumpInstruction):
         # The new PC is formed by the last 26 bits of the instruction
         # shifted left and the 4 upper bits of the current PC
-        address = str(instruction.target)
+        address_str = self.__PC[0:4] + str(instruction.target) + '00'
+        self.__PC = bits_to_int(address_str)

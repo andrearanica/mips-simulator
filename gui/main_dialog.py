@@ -1,4 +1,6 @@
 from libs import utils, exceptions, constants
+from libs.utils import convert
+from libs.constants import Systems
 from libs.datapath import Datapath
 from libs.constants import REGISTERS_NAMES
 from gui.terminal import Terminal
@@ -11,9 +13,14 @@ class MainDialog:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.root.title = 'MIPS Simulator'
+        self.system = constants.Systems.DECIMAL
         self.__build_dialog()
         self.datapath = Datapath()
-        self.pointed_pc = None
+        self.system = Systems.DECIMAL
+
+    def set_system(self, system: int) -> None:
+        self.system = system
+        self.__update_interface()
 
     def __build_dialog(self):
         # Draw the dialog structure
@@ -27,6 +34,8 @@ class MainDialog:
         self.root.resizable(width=False, height=False)
 
         # Add widgets
+        self.__build_menu()
+
         self.title_label = tk.Label(self.root, text='MIPS simulator')
         self.title_label.grid(row=1, column=2)
 
@@ -70,6 +79,29 @@ class MainDialog:
 
         self.__reset_interface()
 
+    def __build_menu(self):
+        """ Builds the upper menu
+        """
+        self.menu_bar = tk.Menu(self.root)
+        self.system_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label='System', menu=self.system_menu)
+        
+        label = 'Binary'
+        if self.system == constants.Systems.BINARY:
+            label += ' (*)'
+        self.system_menu.add_command(label=label, command= lambda: self.set_system(constants.Systems.BINARY))
+        
+        label = 'Decimal'
+        if self.system == constants.Systems.DECIMAL:
+            label += ' (*)'
+        self.system_menu.add_command(label=label, command= lambda: self.set_system(constants.Systems.DECIMAL))
+        
+        label = 'Hexadecimal'
+        if self.system == constants.Systems.HEX:
+            label += ' (*)'
+        self.system_menu.add_command(label=label, command= lambda: self.set_system(constants.Systems.HEX))
+        self.root.config(menu=self.menu_bar)
+
     def on_click_button_import_file(self):
         file_path = filedialog.askopenfilename()
         if file_path:
@@ -91,20 +123,19 @@ class MainDialog:
         self.__reset_interface()
 
     def run_code(self):
-        # FIXME crash if launching a program the second time
         self.datapath.run()
         self.message_label.config(text='Execution stopped')
         self.__update_interface()
 
     def run_code_step_by_step(self):
-        self.pointed_pc = self.datapath.PC
-        try:
+        text_segment_addresses = [address 
+            for address in self.datapath.memory.get_data().keys() 
+            if constants.TEXT_SEGMENT_START <= address < constants.DATA_SEGMENT_START]
+        if self.datapath.PC > max(text_segment_addresses):
+            self.message_label.config(text='Execution stopped')
+        else:
             self.datapath.run_single_instruction()
-        except exceptions.BreakException:
-            self.message_label.config(text='Execution stopped using break instruction')
-
         self.__update_interface()
-        # If BreakException write the end message
     
     def __reset_interface(self):
         # Reset register table
@@ -119,11 +150,13 @@ class MainDialog:
             self.memory_table.delete(item)
         self.message_label.config(text='')
 
+        self.__build_menu()
+
     def __update_interface(self):
         for item in self.registers_table.get_children():
             self.registers_table.delete(item)
         for register_number, register_value in enumerate(self.datapath.register_file.registers):
-            self.registers_table.insert('', tk.END, values=(REGISTERS_NAMES.get(register_number), register_value))
+            self.registers_table.insert('', tk.END, values=(REGISTERS_NAMES.get(register_number), convert(register_value, self.system)))
         
         # I write a row for each word, so I group 4 bytes to write a row
         for item in self.memory_table.get_children():
@@ -137,12 +170,24 @@ class MainDialog:
                 pos_char = ' '
                 if self.datapath.PC == word_address:
                     pos_char = '*'
-                self.memory_table.insert('', tk.END, values=(pos_char, word_address, memory_row))
+                memory_row_int = utils.bits_to_int(memory_row)
+                
+                if self.system == Systems.BINARY:
+                    n_ciphers = 32
+                else:
+                    n_ciphers = None
+
+                self.memory_table.insert('', tk.END, values=(pos_char, convert(word_address, self.system, n_ciphers), convert(memory_row_int, self.system, n_ciphers)))
                 memory_row = ''
             if (i+1) % 4 == 1:
                 word_address = address
+
+        self.__build_menu()
     
     def launch_console(self):
         root = tk.Tk()
         terminal = Terminal(root)
         root.mainloop()
+
+    def launch_settings(self):
+        pass

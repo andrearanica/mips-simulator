@@ -1,5 +1,6 @@
-import math
+from libs import constants
 
+import math
 
 def int_to_bits(n: int, n_ciphers: int=0) -> str:
     """ Returns the integer represented in binary as a string
@@ -9,7 +10,6 @@ def int_to_bits(n: int, n_ciphers: int=0) -> str:
         binary_n = "0"+binary_n
     return binary_n
 
-
 def bits_to_int(bits: str) -> int:
     """ Returns the integer represented by the passed string
     """
@@ -18,14 +18,11 @@ def bits_to_int(bits: str) -> int:
         n += int(b) * math.pow(2, i)
     return int(n)
 
-
 def is_break_instruction(instruction: str) -> bool:
     return instruction[0:6] == '000000' and instruction[26:32] == '001101'
 
-
 def is_valid_instruction(instruction: str) -> bool:
     return len(instruction) == 32
-
 
 def is_address_valid(address: int) -> bool:
     """ Returns if the address is aligned to the word (last 00 bits)
@@ -33,12 +30,10 @@ def is_address_valid(address: int) -> bool:
     address_in_bits = int_to_bits(address)
     return address_in_bits[len(address_in_bits)-2:len(address_in_bits)]
 
-
 def is_binary_program_valid(program: str) -> bool:
     """ Returns if the passed binary program (composed only by 0s and 1s) is valid or not
     """
     return len(program) % 2 == 0 and program.isdigit()
-
 
 def split_program_to_instructions(program: str) -> list:
     """ Returns a list of instruction as strings
@@ -48,3 +43,28 @@ def split_program_to_instructions(program: str) -> list:
         instructions.append(program[0:32])
         program = program[32:]
     return instructions
+
+def convert(number: int, system: constants.Systems, n_ciphers=32) -> int:
+    """ Converts the number from the decimal system to the desired one
+    """
+    if number == 0:
+        return 0
+
+    converted_number = ''
+    while number != 0:
+        rest = normalize_cipher(int(number % system.value))
+        converted_number += rest
+        number = int(number / system.value)
+    
+    converted_number = converted_number[::-1]
+    while n_ciphers and len(converted_number) < n_ciphers:
+        converted_number = '0' + converted_number
+
+    return converted_number
+
+def normalize_cipher(n: int):
+    a_char = ord('A')
+    if n < 10:
+        return str(n)
+    else:
+        return chr(a_char + (n-10))

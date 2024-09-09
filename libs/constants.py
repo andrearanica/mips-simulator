@@ -1,3 +1,10 @@
+from enum import Enum
+
+class Systems(Enum):
+    BINARY = 2
+    DECIMAL = 10
+    HEX = 16
+
 # Constants that represent the min and max integer that can be represented
 MAX_INT = 2147483647
 MIN_INT = -2147483648

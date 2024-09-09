@@ -6,16 +6,6 @@ class Memory:
         self.__data_segment = {}
         self.__stack_segment = {}
 
-    @property
-    def write_data(self) -> int:
-        return self.__write_data
-
-    @write_data.setter
-    def write_data(self, write_data: int) -> None:
-        if write_data < MIN_INT or write_data > MAX_INT:
-            raise OverflowError()
-        self.__write_data = write_data
-
     def get_data(self, address: int|None=None) -> int|dict:
         if address != None:
             if TEXT_SEGMENT_START <= address < DATA_SEGMENT_START:
@@ -36,7 +26,7 @@ class Memory:
             memory_dict.update(self.__data_segment)
             memory_dict.update(self.__stack_segment)
             return memory_dict
-
+        
     def write_data(self, data: int, address: int) -> None:
         if TEXT_SEGMENT_START <= address < DATA_SEGMENT_START:
             # Write into text segment
