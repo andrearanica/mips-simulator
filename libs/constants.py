@@ -57,3 +57,7 @@ REGISTERS_NAMES = {
     30: "$fp",
     31: "$ra"
 }
+
+opcodes = {
+    'addi': 0x6,
+}
