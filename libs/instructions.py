@@ -158,7 +158,7 @@ class MemoryInstruction(ITypeInstruction):
     def __init__(self, opcode: int, rs: int, rt: int, immediate: int) -> None:
         super().__init__(opcode, rs, rt, immediate)
 
-def get_instruction_object_from_binary_from_binary(instruction: str):
+def get_instruction_object_from_binary(instruction: str):
     opcode = instruction[0:6]
     funct = instruction[26:32]
 

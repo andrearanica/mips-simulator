@@ -8,7 +8,7 @@ if __name__ == '__main__':
     dialog = MainDialog(root)
     # root.mainloop()
     instructions = [
-        'addi $t0, $t0, 0x1'
+        'add $t0, $t1, $t2'
     ]
     assembler = assembler.Assembler(instructions)
     assembled_program = assembler.get_assembled_program()

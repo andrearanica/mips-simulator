@@ -101,7 +101,43 @@ class Datapath:
             raise EmptyInstructionException()
 
         # After the instruction has been fetched, I get the opcode to understand the type of the instruction (R-Type, I-Type...)
-        return get_instruction_object_from_binary(instruction)
+        return self.__get_instruction_object_from_binary(instruction)
+
+    def __get_instruction_object_from_binary(self, instruction: str):
+        opcode = instruction[0:6]
+        funct = instruction[26:32]
+
+        if opcode == '000000':
+            # It is an R-Type instruction
+            if funct == '001100':
+                instruction_obj = SystemCallInstruction()
+            elif funct == '001101':                 # It is a break instruction
+                raise BreakException('Execution stopped using break instruction')
+            else:
+                rs = bits_to_int(instruction[6:11])
+                rt = bits_to_int(instruction[11:16])
+                rd = bits_to_int(instruction[16:21])
+                shamt = bits_to_int(instruction[21:26])
+                funct = bits_to_int(instruction[26:32])
+                instruction_obj = RTypeInstruction(bits_to_int(opcode), rs, rt, rd, shamt, funct)
+        elif opcode == '000100':
+            # It is a BEQ instruction
+            rs = bits_to_int(instruction[6:11])
+            rt = bits_to_int(instruction[11:16])
+            offset = bits_to_int(instruction[16:32])
+            instruction_obj = BranchOnEqualInstruction(bits_to_int(opcode), rs, rt, offset)
+        elif opcode == '000010':
+            # It is a jump instruction
+            target = bits_to_int(instruction[6:32])
+            instruction_obj = JumpInstruction(target)
+        else:
+            # It is a I-Type instruction
+            rs = bits_to_int(instruction[6:11])
+            rt = bits_to_int(instruction[11:16])
+            immediate = bits_to_int(instruction[16:32])
+            instruction_obj = ITypeInstruction(bits_to_int(opcode), rs, rt, immediate)
+
+        return instruction_obj
 
     def __decode_instruction(self, instruction: Instruction):
         if hasattr(instruction, 'rs') and hasattr(instruction, 'rt'):
