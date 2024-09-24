@@ -2,8 +2,8 @@ from libs.alu import ALU
 from libs.alu_operations import AluOperations
 from libs.memory import Memory
 from libs.register_file import RegisterFile
-from libs.instructions import Instruction, RTypeInstruction, ITypeInstruction, SystemCallInstruction, BranchOnEqualInstruction, JumpInstruction
-from libs.constants import MEMORY_DIM, BREAK_INSTRUCTION, TEXT_SEGMENT_START
+from libs.instructions import *
+from libs.constants import MEMORY_DIM, BREAK_INSTRUCTION, TEXT_SEGMENT_START, OPCODES, RTYPE_OPCODE
 from libs.exceptions import NotValidInstructionException, BreakException, EmptyInstructionException
 from libs.utils import is_break_instruction, int_to_bits, bits_to_int, is_address_valid
 
@@ -101,13 +101,14 @@ class Datapath:
             raise EmptyInstructionException()
 
         # After the instruction has been fetched, I get the opcode to understand the type of the instruction (R-Type, I-Type...)
-        return self.__get_instruction_object(instruction)
+        return self.__get_instruction_object_from_binary(instruction)
 
-    def __get_instruction_object(self, instruction: str):
+    def __get_instruction_object_from_binary(self, instruction: str):
         opcode = instruction[0:6]
         funct = instruction[26:32]
 
-        if opcode == '000000':
+        # FIXME
+        if bits_to_int(opcode) == RTYPE_OPCODE:
             # It is an R-Type instruction
             if funct == '001100':
                 instruction_obj = SystemCallInstruction()

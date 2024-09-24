@@ -34,7 +34,7 @@ REGISTERS_NAMES = {
     7: "$a3",
     8: "$t0",
     9: "$t1",
-    10: "$2",
+    10: "$t2",
     11: "$t3",
     12: "$t4",
     13: "$t5",
@@ -56,4 +56,50 @@ REGISTERS_NAMES = {
     29: "$sp",
     30: "$fp",
     31: "$ra"
+}
+
+RTYPE_OPCODE = 0x0
+
+RTYPE_OPCODES = {
+    'add': 0x0,
+    'and': 0x0,
+    'nor': 0x0,
+    'or': 0x0,
+    'sll': 0x0,
+    'sub': 0x0,
+    'slt': 0x0
+}
+
+ITYPE_OPCODES = {
+    'addi': 0x8,
+    'andi': 0xc,
+    'ori': 0xd,
+    'lui': 0xf,
+    'beq': 0x4
+}
+
+JUMP_OPCODES = {
+    'j': 0x2,
+    'jal': 0x3
+}
+
+MEMORY_OPCODES = {
+    'lw': 0x23,
+    'sw': 0x2b
+}
+
+OPCODES = {}
+OPCODES.update(RTYPE_OPCODES)
+OPCODES.update(ITYPE_OPCODES)
+OPCODES.update(JUMP_OPCODES)
+OPCODES.update(MEMORY_OPCODES)
+
+FUNCT_CODES = {
+    'add': 0x20,
+    'and': 0x24,
+    'nor': 0x27,
+    'or': 0x25,
+    'sll': 0x0,
+    'sub': 0x22,
+    'slt': 0x2a
 }
