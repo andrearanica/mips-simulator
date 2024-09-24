@@ -3,7 +3,7 @@ from libs.alu_operations import AluOperations
 from libs.memory import Memory
 from libs.register_file import RegisterFile
 from libs.instructions import *
-from libs.constants import MEMORY_DIM, BREAK_INSTRUCTION, TEXT_SEGMENT_START
+from libs.constants import MEMORY_DIM, BREAK_INSTRUCTION, TEXT_SEGMENT_START, OPCODES, RTYPE_OPCODE
 from libs.exceptions import NotValidInstructionException, BreakException, EmptyInstructionException
 from libs.utils import is_break_instruction, int_to_bits, bits_to_int, is_address_valid
 
@@ -107,7 +107,8 @@ class Datapath:
         opcode = instruction[0:6]
         funct = instruction[26:32]
 
-        if opcode == '000000':
+        # FIXME
+        if bits_to_int(opcode) == RTYPE_OPCODE:
             # It is an R-Type instruction
             if funct == '001100':
                 instruction_obj = SystemCallInstruction()

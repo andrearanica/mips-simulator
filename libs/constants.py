@@ -58,6 +58,8 @@ REGISTERS_NAMES = {
     31: "$ra"
 }
 
+RTYPE_OPCODE = 0x0
+
 RTYPE_OPCODES = {
     'add': 0x0,
     'and': 0x0,
@@ -77,7 +79,7 @@ ITYPE_OPCODES = {
 }
 
 JUMP_OPCODES = {
-    'jump': 0x2,
+    'j': 0x2,
     'jal': 0x3
 }
 
@@ -86,11 +88,11 @@ MEMORY_OPCODES = {
     'sw': 0x2b
 }
 
-opcodes = {}
-opcodes.update(RTYPE_OPCODES)
-opcodes.update(ITYPE_OPCODES)
-opcodes.update(JUMP_OPCODES)
-opcodes.update(MEMORY_OPCODES)
+OPCODES = {}
+OPCODES.update(RTYPE_OPCODES)
+OPCODES.update(ITYPE_OPCODES)
+OPCODES.update(JUMP_OPCODES)
+OPCODES.update(MEMORY_OPCODES)
 
 FUNCT_CODES = {
     'add': 0x20,

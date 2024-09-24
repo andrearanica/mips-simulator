@@ -68,3 +68,9 @@ def normalize_cipher(n: int):
         return str(n)
     else:
         return chr(a_char + (n-10))
+    
+def get_register_number_from_name(register_name: str):
+    for number, name in constants.REGISTERS_NAMES.items():
+        if name == register_name:
+            return number
+    return -1
