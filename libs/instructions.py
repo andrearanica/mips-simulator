@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from libs import constants
 from libs.exceptions import NotValidInstructionException
 from libs.utils import bits_to_int, int_to_bits
 from libs.exceptions import BreakException
@@ -17,6 +18,10 @@ class Instruction(ABC):
     @opcode.setter
     def opcode(self, opcode: int) -> None:
         self._opcode = opcode
+
+    @abstractmethod
+    def to_text(self):
+        pass
 
 
 class RegisterInstruction(Instruction):
@@ -46,6 +51,9 @@ class RegisterInstruction(Instruction):
         if rt < 0 or rt > 31:
             raise NotValidInstructionException(f"Register {rt} is not a valid register")
         self._rs = rt
+
+    def to_text(self):
+        pass
 
 
 class RTypeInstruction(RegisterInstruction):
@@ -85,6 +93,14 @@ class RTypeInstruction(RegisterInstruction):
     def __str__(self) -> str:
         return f"{int_to_bits(self.opcode, 6)}{int_to_bits(self.rs, 5)}{int_to_bits(self.rt, 5)}{int_to_bits(self.rd, 5)}{int_to_bits(self.shamt, 5)}{int_to_bits(self.funct, 6)}"
 
+    def to_text(self) -> str:
+        for instruction, funct in constants.FUNCT_CODES.items():
+            if funct == self.funct:
+                instruction_name = instruction
+        rt_name = constants.REGISTERS_NAMES.get(self.rt)
+        rs_name = constants.REGISTERS_NAMES.get(self.rs)
+        rd_name = constants.REGISTERS_NAMES.get(self.rd)
+        return f'{instruction_name} {rd_name} {rs_name} {rt_name}'
 
 class ITypeInstruction(RegisterInstruction):
     """ Instruction that executes arithmetic and logical operations between registers and immediates
@@ -103,7 +119,14 @@ class ITypeInstruction(RegisterInstruction):
 
     def __str__(self) -> str:
         return f"{int_to_bits(self.opcode, 6)}{int_to_bits(self.rs, 5)}{int_to_bits(self.rt, 5)}{int_to_bits(self.immediate, 16)}"
-
+    
+    def to_text(self) -> str:
+        for instruction, opcode in constants.ITYPE_OPCODES.items():
+            if opcode == self.opcode:
+                instruction_name = instruction
+        rt_name = constants.REGISTERS_NAMES.get(self.rt)
+        rs_name = constants.REGISTERS_NAMES.get(self.rs)
+        return f'{instruction_name} {rt_name} {rs_name} {self.immediate}'
 
 class BranchOnEqualInstruction(RegisterInstruction):
     """ Instruction that confront the content of two registers and jumps to an offset
@@ -123,6 +146,10 @@ class BranchOnEqualInstruction(RegisterInstruction):
     def __str__(self) -> str:
         return f"{int_to_bits(self.opcode, 6)}{int_to_bits(self.rs, 5)}{int_to_bits(self.rt, 5)}{int_to_bits(self.offset, 16)}"
 
+    def to_text(self):
+        rs_name = constants.REGISTERS_NAMES.get(self.rs)
+        rt_name = constants.REGISTERS_NAMES.get(self.rt)
+        return f'beq {rt_name} {rs_name} {self.offset}'
 
 class JumpInstruction(Instruction):
     """ Instruction that jumps inconditionally to a target
@@ -142,6 +169,8 @@ class JumpInstruction(Instruction):
     def __str__(self) -> str:
         return f"000010{int_to_bits(self.target, 26)}"
     
+    def to_text(self):
+        return f'j {self.target}'
 
 class SystemCallInstruction(Instruction):
     """ Instruction that calls the system basic functions
@@ -157,17 +186,38 @@ class MemoryInstruction(ITypeInstruction):
     """
     def __init__(self, opcode: int, rs: int, rt: int, immediate: int) -> None:
         super().__init__(opcode, rs, rt, immediate)
+    
+    def to_text(self):
+        for name, opcode in constants.MEMORY_OPCODES.items():
+            if opcode == self.opcode:
+                instruction_name = name
+        rt_name = constants.REGISTERS_NAMES.get(self.rt)
+        rs_name = constants.REGISTERS_NAMES.get(self.rs)
+        return f'{instruction_name} {rt_name} {self.immediate}({rs_name})'
 
+class BreakInstruction(RTypeInstruction):
+    def __init__(self) -> None:
+        super().__init__(0, 0, 0, 0, 0, 0xd)
+    
+    def __str__(self):
+        return '000000000000000000001101'
+    
+    def to_text(self):
+        return 'break'
+
+# TODO move this function inside assembler
 def get_instruction_object_from_binary(instruction: str):
-    opcode = instruction[0:6]
-    funct = instruction[26:32]
+    opcode = str(instruction)[0:6]
+    funct = str(instruction)[26:32]
+
+    instruction_obj = None
 
     if opcode == '000000':
         # It is an R-Type instruction
         if funct == '001100':
             instruction_obj = SystemCallInstruction()
         elif funct == '001101':                 # It is a break instruction
-            raise BreakException('Execution stopped using break instruction')
+            return BreakInstruction()
         else:
             rs = bits_to_int(instruction[6:11])
             rt = bits_to_int(instruction[11:16])
@@ -185,11 +235,18 @@ def get_instruction_object_from_binary(instruction: str):
         # It is a jump instruction
         target = bits_to_int(instruction[6:32])
         instruction_obj = JumpInstruction(target)
-    else:
+    elif bits_to_int(opcode) in constants.ITYPE_OPCODES.values():
         # It is a I-Type instruction
         rs = bits_to_int(instruction[6:11])
         rt = bits_to_int(instruction[11:16])
         immediate = bits_to_int(instruction[16:32])
         instruction_obj = ITypeInstruction(bits_to_int(opcode), rs, rt, immediate)
+    elif bits_to_int(opcode) in constants.MEMORY_OPCODES.values():
+        rs = bits_to_int(instruction[6:11])
+        rt = bits_to_int(instruction[11:16])
+        immediate = bits_to_int(instruction[16:32])
+        instruction_obj = MemoryInstruction(bits_to_int(opcode), rs, rt, immediate)
+    else:
+        raise RuntimeError(f'Instruction {instruction} not supported')
 
     return instruction_obj

@@ -37,7 +37,7 @@ class Assembler:
             
             if first_word != 'sll':
                 _, rd, rs, rt = instruction.replace(',', '').split(' ')
-                shamt = 0x0
+                shamt = 0
             else:
                 _, rd, rt, shamt = instruction.replace(',', '').split(' ')
                 rs = 0
@@ -47,7 +47,7 @@ class Assembler:
                 rs = [i for i, register in REGISTERS_NAMES.items() if register == rs][0]
             rt = [i for i, register in REGISTERS_NAMES.items() if register == rt][0]
 
-            opcode_str = int_to_bits(opcode, 5)
+            opcode_str = int_to_bits(opcode, 6)
             rd_str = int_to_bits(int(rd), 5)
             rs_str = int_to_bits(int(rs), 5)
             rt_str = int_to_bits(int(rt), 5)
@@ -57,7 +57,7 @@ class Assembler:
 
             shamt_str = int_to_bits(int(shamt), 5)
 
-            instruction_str = f'{opcode_str}{rs_str}{rt_str}{rd_str}{shamt_str}{int_to_bits(funct_code, 5)}'
+            instruction_str = f'{opcode_str}{rs_str}{rt_str}{rd_str}{shamt_str}{int_to_bits(funct_code, 6)}'
         
         elif opcode == OPCODES.get('j') or opcode == OPCODES.get('jal'):
             _, immediate = instruction.replace(',', '').split(' ')

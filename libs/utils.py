@@ -44,7 +44,7 @@ def split_program_to_instructions(program: str) -> list:
         program = program[32:]
     return instructions
 
-def convert(number: int, system: constants.Systems, n_ciphers=32) -> int:
+def convert(number: int, system: constants.Systems, n_ciphers=0) -> int:
     """ Converts the number from the decimal system to the desired one
     """
     if number == 0:

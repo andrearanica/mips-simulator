@@ -1,4 +1,6 @@
 from libs import utils, exceptions, constants
+from libs.instructions import get_instruction_object_from_binary
+from libs.assembler import Assembler
 from libs.utils import convert
 from libs.constants import Systems
 from libs.datapath import Datapath
@@ -104,18 +106,23 @@ class MainDialog:
 
     def on_click_button_import_file(self):
         file_path = filedialog.askopenfilename()
+        self.instructions = []
         if file_path:
             with open(file_path, 'r+') as file_reader:
                 file_content = file_reader.read()
-            if not utils.is_binary_program_valid(file_content):
-                messagebox.askokcancel('Error', 'The imported file is not a valid file; please check that the syntax is correct')
+                
+            self.__reset_interface()
+            if '.asm' in file_path:
+                self.instructions = self.__get_assembled_program(file_content)
             else:
-                self.__reset_interface()
-                self.instructions = utils.split_program_to_instructions(file_content)
-                for i, instruction in enumerate(self.instructions):
-                    self.code_textbox.insert(tk.END, f'{i} | {instruction}\n')
-                self.datapath.load_program_in_memory(self.instructions)
-                self.__update_interface()
+                if not utils.is_binary_program_valid(file_content):
+                    messagebox.askokcancel('Error', 'The imported file is not a valid file; please check that the syntax is correct')
+                else:
+                    self.instructions = utils.split_program_to_instructions(file_content)
+            for i, instruction in enumerate(self.instructions):
+                self.code_textbox.insert(tk.END, f'{i} | {instruction}\n')
+            self.datapath.load_program_in_memory([str(instruction) for instruction in self.instructions])
+            self.__update_interface()
 
     def on_click_button_reset(self):
         self.instructions = []
@@ -137,6 +144,13 @@ class MainDialog:
             self.datapath.run_single_instruction()
         self.__update_interface()
     
+    def __get_assembled_program(self, program: str):
+        """ Gets the program file content and returns a list of instructions instances
+        """
+        instructions = program.split('\n')
+        assembler = Assembler(instructions)
+        return assembler.get_assembled_program()
+
     def __reset_interface(self):
         # Reset register table
         for item in self.registers_table.get_children():
@@ -158,14 +172,14 @@ class MainDialog:
         for register_number, register_value in enumerate(self.datapath.register_file.registers):
             self.registers_table.insert('', tk.END, values=(REGISTERS_NAMES.get(register_number), convert(register_value, self.system)))
         
-        # I write a row for each word, so I group 4 bytes to write a row
         for item in self.memory_table.get_children():
             self.memory_table.delete(item)
         
         memory_row = ''
         word_address = 0
-        for i, (address, value) in enumerate(self.datapath.memory.get_data().items()):    
+        for i, (address, value) in enumerate(self.datapath.memory.get_data().items()):
             memory_row = utils.int_to_bits(value, 8) + memory_row
+            # I write a row for each word, so I group 4 bytes to write a row
             if i+1 and (i+1) % 4 == 0:
                 pos_char = ' '
                 if self.datapath.PC == word_address:
@@ -177,7 +191,14 @@ class MainDialog:
                 else:
                     n_ciphers = None
 
-                self.memory_table.insert('', tk.END, values=(pos_char, convert(word_address, self.system, n_ciphers), convert(memory_row_int, self.system, n_ciphers)))
+                # I try to convert the row as an instruction
+                memory_row_bits = utils.int_to_bits(memory_row_int, 32)
+                instruction = get_instruction_object_from_binary(memory_row_bits)
+                if instruction != None:
+                    # If it can be converted in an instruction, I display the instruction
+                    self.memory_table.insert('', tk.END, values=(pos_char, convert(word_address, self.system, n_ciphers), instruction.to_text()))
+                else:
+                    self.memory_table.insert('', tk.END, values=(pos_char, convert(word_address, self.system, n_ciphers), convert(memory_row_int, self.system, n_ciphers)))
                 memory_row = ''
             if (i+1) % 4 == 1:
                 word_address = address
@@ -186,7 +207,6 @@ class MainDialog:
     
     def launch_console(self):
         root = tk.Tk()
-        terminal = Terminal(root)
         root.mainloop()
 
     def launch_settings(self):
