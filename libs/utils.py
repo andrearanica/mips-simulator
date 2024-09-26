@@ -44,7 +44,7 @@ def split_program_to_instructions(program: str) -> list:
         program = program[32:]
     return instructions
 
-def convert(number: int, system: constants.Systems, n_ciphers=0) -> int:
+def convert(number: int, system: int, n_ciphers=0) -> int:
     """ Converts the number from the decimal system to the desired one
     """
     if number == 0:
@@ -52,9 +52,9 @@ def convert(number: int, system: constants.Systems, n_ciphers=0) -> int:
 
     converted_number = ''
     while number != 0:
-        rest = normalize_cipher(int(number % system.value))
+        rest = normalize_cipher(int(number % system))
         converted_number += rest
-        number = int(number / system.value)
+        number = int(number / system)
     
     converted_number = converted_number[::-1]
     while n_ciphers and len(converted_number) < n_ciphers:

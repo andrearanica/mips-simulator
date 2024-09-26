@@ -1,0 +1,18 @@
+{
+    "DATAPATH_OK": "",
+    "DATAPATH_BREAK": "Esecuzione fermata con istruzione 'break'",
+    "MEMORY_ADDRESS_NOT_VALID": "Errore: indirizzo di memoria non valido",
+    "INSTRUCTION_NOT_VALID": "Errore: esecuzione di un'istruzione non valida",
+    "OPEN_FILE": "Apri file",
+    "RESET": "Reset",
+    "ADDRESS": "Indirizzo",
+    "VALUE": "Valore",
+    "CODE": "Programma",
+    "MEMORY": "Memoria",
+    "RUN": "Esegui",
+    "STEP_BY_STEP": "Esecuzione passo-passo",
+    "REGISTER": "Registro",
+    "BINARY": "Binario",
+    "DECIMAL": "Decimale",
+    "HEXADECIMAL": "Esadecimale"
+}

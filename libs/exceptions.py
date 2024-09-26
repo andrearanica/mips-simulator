@@ -6,3 +6,6 @@ class BreakException(Exception):
 
 class EmptyInstructionException(Exception):
     pass
+
+class NotValidMemoryAddressException(Exception):
+    pass

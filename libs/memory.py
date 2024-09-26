@@ -1,3 +1,4 @@
+from libs.exceptions import NotValidMemoryAddressException
 from libs.constants import MIN_INT, MAX_INT, DATA_SEGMENT_START, TEXT_SEGMENT_START
 
 class Memory:
@@ -15,7 +16,7 @@ class Memory:
                 # Get data from data segment
                 read_data = self.__data_segment.get(address)
             else:
-                raise RuntimeError(f'Error trying to read memory address {address}')
+                raise NotValidMemoryAddressException(f'Error trying to read memory address {address}')
             if read_data != None:
                 return read_data
             else:

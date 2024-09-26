@@ -1,9 +1,14 @@
+import os
 from enum import Enum
 
 class Systems(Enum):
     BINARY = 2
     DECIMAL = 10
     HEX = 16
+
+class Languages(Enum):
+    ITA = 'ita'
+    ENG = 'eng'
 
 # Constants that represent the min and max integer that can be represented
 MAX_INT = 2147483647
@@ -102,4 +107,12 @@ FUNCT_CODES = {
     'sll': 0x0,
     'sub': 0x22,
     'slt': 0x2a
+}
+
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), '..', 'config')
+CONFIG_FILE_PATH = os.path.join(CONFIG_PATH, 'config.json')
+
+STANDARD_CONFIG = {
+    'system': Systems.DECIMAL.value, 
+    'language': Languages.ENG.value
 }

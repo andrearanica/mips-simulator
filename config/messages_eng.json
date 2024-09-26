@@ -1,0 +1,18 @@
+{
+    "DATAPATH_OK": "",
+    "DATAPATH_BREAK": "Execution stopped using 'break' instruction",
+    "MEMORY_ADDRESS_NOT_VALID": "Error trying to access a not valid memory address",
+    "INSTRUCTION_NOT_VALID": "Error trying to execute a not valid instruction",
+    "OPEN_FILE": "Open file",
+    "RESET": "Reset",
+    "ADDRESS": "Address",
+    "VALUE": "Value",
+    "CODE": "Code",
+    "MEMORY": "Memory",
+    "RUN": "Run",
+    "STEP_BY_STEP": "Step by step",
+    "REGISTER": "Register",
+    "BINARY": "Binary",
+    "DECIMAL": "Decimal",
+    "HEXADECIMAL": "Hexadecimal"
+}

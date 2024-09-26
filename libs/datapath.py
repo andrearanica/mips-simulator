@@ -1,11 +1,21 @@
+from enum import Enum
+
 from libs.alu import ALU
 from libs.alu_operations import AluOperations
 from libs.memory import Memory
 from libs.register_file import RegisterFile
 from libs.instructions import *
 from libs.constants import MEMORY_DIM, BREAK_INSTRUCTION, TEXT_SEGMENT_START, OPCODES, RTYPE_OPCODE
-from libs.exceptions import NotValidInstructionException, BreakException, EmptyInstructionException
+from libs.exceptions import *
 from libs.utils import is_break_instruction, int_to_bits, bits_to_int, is_address_valid
+
+
+class DatapathStates(Enum):
+    OK = 'DATAPATH_OK'
+    BREAK = 'DATAPATH_BREAK'
+    MEMORY_ADDRESS_EXCEPTION = 'MEMORY_ADDRESS_NOT_VALID'
+    INSTRUCTION_EXCEPTION = 'INSTRUCTION_NOT_VALID'
+
 
 class Datapath:
     def __init__(self) -> None:
@@ -16,6 +26,7 @@ class Datapath:
         self.__memory = Memory()
         self.__register_file = RegisterFile()
         self.__alu_out = 0
+        self.__state = DatapathStates.OK
 
     @property
     def memory(self) -> Memory:
@@ -28,6 +39,10 @@ class Datapath:
     @property
     def PC(self) -> int:
         return self.__PC
+    
+    @property
+    def state(self) -> DatapathStates:
+        return self.__state
 
     def run(self) -> None:
         i = 0
@@ -39,24 +54,26 @@ class Datapath:
                 self.__run_instruction()
                 n_empty_instructions = 0
                 i += 1
-            except EmptyInstructionException:
-                n_empty_instructions += 1
-                pass
-            except BreakException:
-                # FIXME add exception handler
-                can_continue = False
+            except Exception as e:
+                self.__handle_exception(e)
 
     def run_single_instruction(self):
+        self.__state = DatapathStates.OK
         try:
             self.__run_instruction()
-        except EmptyInstructionException:
-            pass
-        except BreakException:
-            pass
+        except Exception as e:
+            self.__handle_exception(e)
+
+    def __handle_exception(self, exception: Exception):
+        if isinstance(exception, BreakException):
+            self.__state = DatapathStates.BREAK
+        elif isinstance(exception, NotValidMemoryAddressException):
+            self.__state = DatapathStates.MEMORY_ADDRESS_EXCEPTION
 
     def __run_instruction(self):
         """ Executes the instruction that is stored inside the PC
         """
+        self.__state = DatapathStates.OK
         fetched_instruction = self.__fetch_instruction()
         if isinstance(fetched_instruction, BreakInstruction):
             raise BreakException('Execution stopped using break instruction')
