@@ -45,13 +45,9 @@ class Datapath:
         return self.__state
 
     def run(self) -> None:
-        i = 0
-        n_empty_instructions = 0
-
-        while self.state != DatapathStates.BREAK and n_empty_instructions < 5:
+        while self.state != DatapathStates.BREAK:
             try:
                 self.__run_instruction()
-                n_empty_instructions = 0
                 i += 1
             except Exception as e:
                 self.__handle_exception(e)
