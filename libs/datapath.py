@@ -46,10 +46,9 @@ class Datapath:
 
     def run(self) -> None:
         i = 0
-        can_continue = True
         n_empty_instructions = 0
 
-        while can_continue and n_empty_instructions < 5:
+        while self.state != DatapathStates.BREAK and n_empty_instructions < 5:
             try:
                 self.__run_instruction()
                 n_empty_instructions = 0
@@ -69,6 +68,9 @@ class Datapath:
             self.__state = DatapathStates.BREAK
         elif isinstance(exception, NotValidMemoryAddressException):
             self.__state = DatapathStates.MEMORY_ADDRESS_EXCEPTION
+        else:
+            # TODO manage other exceptions
+            print(exception)
 
     def __run_instruction(self):
         """ Executes the instruction that is stored inside the PC

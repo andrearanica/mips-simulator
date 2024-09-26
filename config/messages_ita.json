@@ -14,5 +14,7 @@
     "REGISTER": "Registro",
     "BINARY": "Binario",
     "DECIMAL": "Decimale",
-    "HEXADECIMAL": "Esadecimale"
+    "HEXADECIMAL": "Esadecimale",
+    "SYSTEM": "Sistema",
+    "LANGUAGE": "Lingua"
 }

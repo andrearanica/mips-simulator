@@ -11,7 +11,7 @@ class Languages(Enum):
     ENG = 'eng'
 
 # Constants that represent the min and max integer that can be represented
-MAX_INT = 2147483647
+MAX_INT = 4294967295
 MIN_INT = -2147483648
 
 # Dimention of the datapath's memory

@@ -70,7 +70,7 @@ class MainDialog:
 
         self.notebook = ttk.Notebook(self.root)
         self.notebook.place(x=350, y=75, width=625, height=300)
-        self.code_textbox = tk.Text(self.notebook)
+        # self.code_textbox = tk.Text(self.notebook)
         self.memory_table = ttk.Treeview(self.notebook, columns=('', 'address', 'value'), show='headings')
         self.memory_table.heading('', text='')
         self.memory_table.heading('address', text='Address')
@@ -79,7 +79,7 @@ class MainDialog:
         self.memory_table.column('address', width=100, stretch=False)
         self.memory_table.column('value', width=505, stretch=False)
         
-        self.notebook.add(self.code_textbox, text='Code')
+        # self.notebook.add(self.code_textbox, text='Code')
         self.notebook.add(self.memory_table, text='Memory')
 
         self.registers_table = ttk.Treeview(self.root, columns=('register', 'value'), show='headings')
@@ -106,8 +106,8 @@ class MainDialog:
         self.menu_bar = tk.Menu(self.root)
         self.system_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.language_menu = tk.Menu(self.menu_bar, tearoff=0)
-        self.menu_bar.add_cascade(label='System', menu=self.system_menu)
-        self.menu_bar.add_cascade(label='Language', menu=self.language_menu)
+        self.menu_bar.add_cascade(label=self.message_manager.get_message('SYSTEM'), menu=self.system_menu)
+        self.menu_bar.add_cascade(label=self.message_manager.get_message('LANGUAGE'), menu=self.language_menu)
 
         label = self.message_manager.get_message('BINARY')
         if self.config['system'] == constants.Systems.BINARY.value:
@@ -134,7 +134,6 @@ class MainDialog:
             label += ' (*)'
         self.language_menu.add_command(label=label, command= lambda: self.set_language(Languages.ENG.value))
 
-
         self.root.config(menu=self.menu_bar)
 
     def __reload_messages(self):
@@ -144,13 +143,13 @@ class MainDialog:
         self.reset_button.config(text=self.message_manager.get_message('RESET'))
         self.run_button.config(text=self.message_manager.get_message('RUN'))
         self.step_by_step_button.config(text=self.message_manager.get_message('STEP_BY_STEP'))
-        self.notebook.tab(0, text=self.message_manager.get_message('CODE'))
-        self.notebook.tab(1, text=self.message_manager.get_message('MEMORY'))
+        self.notebook.tab(0, text=self.message_manager.get_message('MEMORY'))
+        # self.notebook.tab(1, text=self.message_manager.get_message('MEMORY'))
         self.registers_table.heading('register', text=self.message_manager.get_message('REGISTER'))
         self.registers_table.heading('value', text=self.message_manager.get_message('VALUE'))
         self.memory_table.heading('address', text=self.message_manager.get_message('ADDRESS'))
         self.memory_table.heading('value', text=self.message_manager.get_message('VALUE'))
-        
+
     def on_click_button_import_file(self):
         file_path = filedialog.askopenfilename()
         self.instructions = []
@@ -166,8 +165,8 @@ class MainDialog:
                     messagebox.askokcancel('Error', 'The imported file is not a valid file; please check that the syntax is correct')
                 else:
                     self.instructions = utils.split_program_to_instructions(file_content)
-            for i, instruction in enumerate(self.instructions):
-                self.code_textbox.insert(tk.END, f'{i} | {instruction}\n')
+            # for i, instruction in enumerate(self.instructions):
+                # self.code_textbox.insert(tk.END, f'{i} | {instruction}\n')
             self.datapath.load_program_in_memory([str(instruction) for instruction in self.instructions])
             self.__update_interface()
 
@@ -205,7 +204,7 @@ class MainDialog:
             self.registers_table.insert('', tk.END, values=(REGISTERS_NAMES.get(register_number), 0))
 
         # Reset code textbox
-        self.code_textbox.delete('1.0', tk.END)
+        # self.code_textbox.delete('1.0', tk.END)
         for item in self.memory_table.get_children():
             self.memory_table.delete(item)
         self.message_label.config(text='')
@@ -239,7 +238,11 @@ class MainDialog:
 
                 # I try to convert the row as an instruction
                 memory_row_bits = utils.int_to_bits(memory_row_int, 32)
-                instruction = get_instruction_object_from_binary(memory_row_bits)
+                try:
+                    instruction = get_instruction_object_from_binary(memory_row_bits)
+                except:
+                    instruction = None
+                
                 if instruction != None:
                     # If it can be converted in an instruction, I display the instruction
                     self.memory_table.insert('', tk.END, values=(pos_char, convert(word_address, self.config['system'], n_ciphers), instruction.to_text()))

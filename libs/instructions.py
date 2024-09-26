@@ -218,7 +218,7 @@ def get_instruction_object_from_binary(instruction: str):
             instruction_obj = SystemCallInstruction()
         elif funct == '001101':                 # It is a break instruction
             return BreakInstruction()
-        else:
+        elif funct in constants.FUNCT_CODES:
             rs = bits_to_int(instruction[6:11])
             rt = bits_to_int(instruction[11:16])
             rd = bits_to_int(instruction[16:21])
