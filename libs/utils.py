@@ -14,9 +14,13 @@ def bits_to_int(bits: str) -> int:
     """ Returns the integer represented by the passed string
     """
     n = 0
+    sign = 1
+    if bits[0] == '-':
+        bits = bits[1:]
+        sign = -1
     for i, b in enumerate(bits[::-1]):
         n += int(b) * math.pow(2, i)
-    return int(n)
+    return sign*int(n)
 
 def is_break_instruction(instruction: str) -> bool:
     return instruction[0:6] == '000000' and instruction[26:32] == '001101'
@@ -74,3 +78,10 @@ def get_register_number_from_name(register_name: str):
         if name == register_name:
             return number
     return -1
+
+def is_number(number_str: str):
+    if not number_str[0].isnumeric():
+        if not number_str[0] == '+' and not number_str[0] == '-':
+            return False
+        number_str = number_str[1:]
+    return number_str.isnumeric()

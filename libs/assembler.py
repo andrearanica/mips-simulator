@@ -1,21 +1,77 @@
-from libs.utils import int_to_bits, get_register_number_from_name
-from libs.constants import REGISTERS_NAMES, OPCODES, FUNCT_CODES, ITYPE_OPCODES
+from libs.utils import *
+from libs.constants import REGISTERS_NAMES, OPCODES, FUNCT_CODES, ITYPE_OPCODES, DATA_SEGMENT_START, TEXT_SEGMENT_START
 from libs.instructions import get_instruction_object_from_binary
 
 class Assembler:
     def __init__(self, instructions: list=[]) -> None:
-        self.__instructions = instructions
+        self.__data = []
+        self.__text = []
+        self.instructions = instructions
+        self.__data_labels = {}
+        self.__text_labels = {}
+
+    @property
+    def instructions(self) -> list:
+        return self.__data.extend(self.__text)
+    
+    @instructions.setter
+    def instructions(self, instructions: list):
+        i = 0
+        while i < len(instructions) and instructions[i] != '.text':
+            if not instructions[i].startswith('.'):
+                self.__data.append(instructions[i])
+            i += 1
+        
+        i += 1
+
+        while i < len(instructions):
+            self.__text.append(instructions[i])
+            i += 1
 
     def get_assembled_program(self):
         """ Returns the list of instructions as binary strings
         """
-        converted_instructions = []
+        self.__get_labels()
         
-        for instruction in self.__instructions:
+        converted_instructions = []
+
+        for i, instruction in enumerate(self.__text):
+            if not instruction:
+                continue
+            
+            if ':' in instruction:
+                _, instruction = instruction.split(':')
+                instruction = instruction[1:]
+                
             converted_instruction = self.__convert_instruction(instruction)
             converted_instructions.append(converted_instruction)
 
         return converted_instructions
+
+    def __get_labels(self):
+        for data in self.__data:
+            if not data:
+                continue
+            label, directive_with_value = data.split(':')
+            label = label.replace(' ', '')
+            _, directive, value = directive_with_value.split(' ')
+            # TODO check that directive is a regex
+            directive = directive.replace(' ', '')
+
+            if len(self.__data_labels.keys()):
+                address = max([address for label, address in self.__data_labels.items()]) + 4
+            else:
+                address = DATA_SEGMENT_START
+
+            self.__data_labels[label] = address
+
+        for i, instruction in enumerate(self.__text):
+            if not instruction:
+                continue
+                
+            if ':' in instruction:
+                label, _ = instruction.split(':')
+                self.__text_labels[label] = TEXT_SEGMENT_START + 4*i
 
     def __convert_instruction(self, instruction: str):
         """ Returns the instruction as an instance of instruction classes
@@ -61,14 +117,26 @@ class Assembler:
         
         elif opcode == OPCODES.get('j') or opcode == OPCODES.get('jal'):
             _, immediate = instruction.replace(',', '').split(' ')
+            
+            if not is_number(immediate):
+                immediate = self.__text_labels.get(immediate)
+                if immediate == None:
+                    raise RuntimeError(f'Label {immediate} has not been defined')
+
+
             opcode_str = int_to_bits(int(opcode), 6)
             immediate_str = int_to_bits(int(immediate), 26)
-
+            
             instruction_str = f'{opcode_str}{immediate_str}'
         
         elif opcode == OPCODES.get('lw') or opcode == OPCODES.get('sw'):
             _, rt, offset_with_base = instruction.replace(',', '').split(' ')
             offset, base_register = offset_with_base.replace(')', '').split('(')
+            
+            if not is_number(offset):
+                offset = self.__text_labels.get(immediate)
+                if offset == None:
+                    raise RuntimeError(f'Label {offset} has not been defined')
             
             opcode_str = int_to_bits(int(opcode), 6)
             rt = get_register_number_from_name(rt)
@@ -81,6 +149,11 @@ class Assembler:
 
         elif opcode in [o for _, o in ITYPE_OPCODES.items()]:
             _, rt, rs, immediate = instruction.replace(',', '').split(' ')
+            
+            if not is_number(immediate):
+                immediate = self.__text_labels.get(immediate)
+                if immediate == None:
+                    raise RuntimeError(f'Label {immediate} has not been defined')
 
             rs = get_register_number_from_name(rs)
             rt = get_register_number_from_name(rt)
