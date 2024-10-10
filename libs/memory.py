@@ -1,5 +1,7 @@
+from libs import utils
 from libs.exceptions import NotValidMemoryAddressException
 from libs.constants import MIN_INT, MAX_INT, DATA_SEGMENT_START, TEXT_SEGMENT_START
+from libs.exceptions import NotValidMemoryAddressException
 
 class Memory:
     def __init__(self) -> None:
@@ -8,8 +10,11 @@ class Memory:
         self.__stack_segment = {}
 
     def get_data(self, address: int|None=None) -> int|dict:
+        # TODO check that address is aligned to word (finishes in 00)
         if address != None:
-            if TEXT_SEGMENT_START <= address < DATA_SEGMENT_START:
+            if not utils.is_address_valid(address):
+                raise NotValidMemoryAddressException(f'Address {address} is not aligned to the word')
+            elif TEXT_SEGMENT_START <= address < DATA_SEGMENT_START:
                 # Get data from text segment
                 read_data = self.__text_segment.get(address)
             elif DATA_SEGMENT_START <= address:

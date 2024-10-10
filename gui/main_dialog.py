@@ -59,17 +59,11 @@ class MainDialog:
         self.title_label = tk.Label(self.root, text='MIPS simulator')
         self.title_label.grid(row=1, column=2)
 
-        self.import_file_button = tk.Button(self.root, text=self.message_manager.get_message('OPEN_FILE'), command=self.on_click_button_import_file)
-        self.import_file_button.grid(row=2, column=1)
-
-        self.reset_button = tk.Button(self.root, text='Reset', command=self.on_click_button_reset)
-        self.reset_button.grid(row=2, column=3)
-
         # self.terminal_button = tk.Button(self.root, text='Open console', command=self.launch_console)
         # self.terminal_button.grid(row=2, column=5)
 
         self.notebook = ttk.Notebook(self.root)
-        self.notebook.place(x=350, y=75, width=625, height=300)
+        self.notebook.place(x=350, y=50, width=625, height=300)
         # self.code_textbox = tk.Text(self.notebook)
         self.memory_table = ttk.Treeview(self.notebook, columns=('', 'address', 'value'), show='headings')
         self.memory_table.heading('', text='')
@@ -83,7 +77,7 @@ class MainDialog:
         self.notebook.add(self.memory_table, text='Memory')
 
         self.registers_table = ttk.Treeview(self.root, columns=('register', 'value'), show='headings')
-        self.registers_table.place(x=25, y=75, width=300, height=300)
+        self.registers_table.place(x=25, y=50, width=300, height=300)
         self.registers_table.heading('register', text='Register')
         self.registers_table.heading('value', text='Value')
         self.registers_table.column('register', width=149)
@@ -104,10 +98,15 @@ class MainDialog:
         """ Builds the upper menu
         """
         self.menu_bar = tk.Menu(self.root)
+        self.file_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.system_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.language_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label=self.message_manager.get_message('FILE'), menu=self.file_menu)
         self.menu_bar.add_cascade(label=self.message_manager.get_message('SYSTEM'), menu=self.system_menu)
         self.menu_bar.add_cascade(label=self.message_manager.get_message('LANGUAGE'), menu=self.language_menu)
+
+        self.file_menu.add_command(label=self.message_manager.get_message('OPEN_FILE'), command=self.on_click_import_file)
+        self.file_menu.add_command(label=self.message_manager.get_message('RESET'), command=self.on_click_reset)
 
         label = self.message_manager.get_message('BINARY')
         if self.config['system'] == constants.Systems.BINARY.value:
@@ -139,8 +138,6 @@ class MainDialog:
     def __reload_messages(self):
         """ Refreshes the text of the widgets that contain messages
         """
-        self.import_file_button.config(text=self.message_manager.get_message('OPEN_FILE'))
-        self.reset_button.config(text=self.message_manager.get_message('RESET'))
         self.run_button.config(text=self.message_manager.get_message('RUN'))
         self.step_by_step_button.config(text=self.message_manager.get_message('STEP_BY_STEP'))
         self.notebook.tab(0, text=self.message_manager.get_message('MEMORY'))
@@ -150,7 +147,7 @@ class MainDialog:
         self.memory_table.heading('address', text=self.message_manager.get_message('ADDRESS'))
         self.memory_table.heading('value', text=self.message_manager.get_message('VALUE'))
 
-    def on_click_button_import_file(self):
+    def on_click_import_file(self):
         file_path = filedialog.askopenfilename()
         self.instructions = []
         if file_path:
@@ -170,7 +167,7 @@ class MainDialog:
             self.datapath.load_program_in_memory([str(instruction) for instruction in self.instructions])
             self.__update_interface()
 
-    def on_click_button_reset(self):
+    def on_click_reset(self):
         self.instructions = []
         self.datapath = Datapath()
         self.__reset_interface()

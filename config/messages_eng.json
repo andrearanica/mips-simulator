@@ -16,5 +16,6 @@
     "DECIMAL": "Decimal",
     "HEXADECIMAL": "Hexadecimal",
     "SYSTEM": "System",
-    "LANGUAGE": "Language"
+    "LANGUAGE": "Language",
+    "FILE": "File"
 }

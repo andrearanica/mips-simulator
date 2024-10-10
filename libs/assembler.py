@@ -18,7 +18,7 @@ class Assembler:
     def instructions(self, instructions: list):
         i = 0
         if not '.data' in instructions:
-            self.__text = instructions
+            self.__text = [instruction for instruction in instructions if not '.text' in instruction]
         else:
             is_data_segment = True
 

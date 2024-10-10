@@ -48,7 +48,6 @@ class Datapath:
         while self.state != DatapathStates.BREAK:
             try:
                 self.__run_instruction()
-                i += 1
             except Exception as e:
                 self.__handle_exception(e)
 
@@ -64,6 +63,8 @@ class Datapath:
             self.__state = DatapathStates.BREAK
         elif isinstance(exception, NotValidMemoryAddressException):
             self.__state = DatapathStates.MEMORY_ADDRESS_EXCEPTION
+        elif isinstance(exception, EmptyInstructionException):
+            pass
         else:
             # TODO manage other exceptions
             print(exception)

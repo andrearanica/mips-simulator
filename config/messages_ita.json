@@ -16,5 +16,6 @@
     "DECIMAL": "Decimale",
     "HEXADECIMAL": "Esadecimale",
     "SYSTEM": "Sistema",
-    "LANGUAGE": "Lingua"
+    "LANGUAGE": "Lingua",
+    "FILE": "File"
 }

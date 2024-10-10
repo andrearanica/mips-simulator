@@ -4,7 +4,13 @@ A Python simulator that executes assembly programs for the  [MIPS32 architecture
 
 ## Quick setup
 
-First you need to make sure you have the `tk` library installed on your PC
+First you need to make sure you have the `tk` library installed on your PC.
+After that, you can run the python script with the following command.
+
+``` bash
+cd path/to/project
+python3 .
+```
 
 #### debian-based distros
 
@@ -31,6 +37,26 @@ The instructions that are currently supported are the following:
 - **Others**: `break`
 
 **Important**: feel free to open a pull request to add new instructions
+
+### Limitations
+You cannot use the `.data` assembly segment, so you can't define labels or use assembler directives in this way.
+```
+.data
+name: .asciiz "marco"
+
+.text
+lw $t0, 0(name)     -> this is not supported
+loop:   addi $t0, $t0, 1
+        beq $t0, $t1, loop    -> this is not supported
+```
+
+So, if you want to access memory using `lw/sw` you should store the address inside a register and then work with that memory address.
+```
+lui $t0, $t0, 1000
+addi $t0, $t0, 1000
+addi $t1, $t1, 5
+sw $t1, 0($t0)
+```
 
 ## How to contribute
 
