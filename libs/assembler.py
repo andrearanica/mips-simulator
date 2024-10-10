@@ -17,21 +17,24 @@ class Assembler:
     @instructions.setter
     def instructions(self, instructions: list):
         i = 0
-        while i < len(instructions) and instructions[i] != '.text':
-            if not instructions[i].startswith('.'):
-                self.__data.append(instructions[i])
-            i += 1
-        
-        i += 1
+        if not '.data' in instructions:
+            self.__text = instructions
+        else:
+            is_data_segment = True
 
-        while i < len(instructions):
-            self.__text.append(instructions[i])
-            i += 1
+            for instruction in instructions:
+                if is_data_segment:
+                    if instruction == '.text':
+                        is_data_segment = False
+                    elif instruction != '.data':
+                        self.__data.append(instruction)
+                else:
+                    self.__text.append(instruction)
 
     def get_assembled_program(self):
         """ Returns the list of instructions as binary strings
         """
-        self.__get_labels()
+        # self.__get_labels()
         
         converted_instructions = []
 
@@ -119,9 +122,10 @@ class Assembler:
             _, immediate = instruction.replace(',', '').split(' ')
             
             if not is_number(immediate):
-                immediate = self.__text_labels.get(immediate)
-                if immediate == None:
-                    raise RuntimeError(f'Label {immediate} has not been defined')
+                raise RuntimeError('Labels are not supported yet')
+                # immediate = self.__text_labels.get(immediate)
+                # if immediate == None:
+                #     raise RuntimeError(f'Label {immediate} has not been defined')
 
 
             opcode_str = int_to_bits(int(opcode), 6)
@@ -134,9 +138,10 @@ class Assembler:
             offset, base_register = offset_with_base.replace(')', '').split('(')
             
             if not is_number(offset):
-                offset = self.__text_labels.get(immediate)
-                if offset == None:
-                    raise RuntimeError(f'Label {offset} has not been defined')
+                raise RuntimeError('Labels are not supported yet')
+                # offset = self.__text_labels.get(immediate)
+                # if offset == None:
+                #     raise RuntimeError(f'Label {offset} has not been defined')
             
             opcode_str = int_to_bits(int(opcode), 6)
             rt = get_register_number_from_name(rt)
@@ -151,9 +156,10 @@ class Assembler:
             _, rt, rs, immediate = instruction.replace(',', '').split(' ')
             
             if not is_number(immediate):
-                immediate = self.__text_labels.get(immediate)
-                if immediate == None:
-                    raise RuntimeError(f'Label {immediate} has not been defined')
+                raise RuntimeError('Labels are not supported yet')
+                # immediate = self.__text_labels.get(immediate)
+                # if immediate == None:
+                #     raise RuntimeError(f'Label {immediate} has not been defined')
 
             rs = get_register_number_from_name(rs)
             rt = get_register_number_from_name(rt)
