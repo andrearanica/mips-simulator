@@ -17,7 +17,7 @@ from tkinter import filedialog, messagebox
 class MainDialog:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
-        self.root.title = 'MIPS Simulator'
+        self.root.title('MIPS Simulator')
         self.datapath = Datapath()
         self.config = self.__get_config()
         self.message_manager = MessageManager(self.config['language'])
@@ -56,15 +56,11 @@ class MainDialog:
         # Add widgets
         self.__build_menu()
 
-        self.title_label = tk.Label(self.root, text='MIPS simulator')
-        self.title_label.grid(row=1, column=2)
-
         # self.terminal_button = tk.Button(self.root, text='Open console', command=self.launch_console)
         # self.terminal_button.grid(row=2, column=5)
 
         self.notebook = ttk.Notebook(self.root)
         self.notebook.place(x=350, y=50, width=625, height=300)
-        # self.code_textbox = tk.Text(self.notebook)
         self.memory_table = ttk.Treeview(self.notebook, columns=('', 'address', 'value'), show='headings')
         self.memory_table.heading('', text='')
         self.memory_table.heading('address', text='Address')
@@ -173,17 +169,26 @@ class MainDialog:
         self.__reset_interface()
 
     def run_code(self):
-        self.datapath.run()
-        self.message_label.config(text='Execution stopped')
-        self.__update_interface()
+        text_segment_addresses = [address 
+            for address in self.datapath.memory.get_data().keys() 
+            if constants.TEXT_SEGMENT_START <= address < constants.DATA_SEGMENT_START]
+        
+        if text_segment_addresses:
+            self.datapath.run()
+            self.message_label.config(text='Execution stopped')
+            self.__update_interface()
+        else:
+            messagebox.showerror('Error', self.message_manager.get_message('NO_INSTRUCTIONS'))
 
     def run_code_step_by_step(self):
         text_segment_addresses = [address 
             for address in self.datapath.memory.get_data().keys() 
             if constants.TEXT_SEGMENT_START <= address < constants.DATA_SEGMENT_START]
-        if self.datapath.PC <= max(text_segment_addresses):
+        if text_segment_addresses and self.datapath.PC <= max(text_segment_addresses):
             self.datapath.run_single_instruction()
-        
+        else:
+            messagebox.showerror('Error', self.message_manager.get_message('NO_INSTRUCTIONS'))
+
         self.__update_interface()
     
     def __get_assembled_program(self, program: str):

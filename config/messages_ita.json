@@ -17,5 +17,6 @@
     "HEXADECIMAL": "Esadecimale",
     "SYSTEM": "Sistema",
     "LANGUAGE": "Lingua",
-    "FILE": "File"
+    "FILE": "File",
+    "NO_INSTRUCTONS": "Non è stato caricato nessun programma in memoria"
 }

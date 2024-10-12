@@ -17,5 +17,6 @@
     "HEXADECIMAL": "Hexadecimal",
     "SYSTEM": "System",
     "LANGUAGE": "Language",
-    "FILE": "File"
+    "FILE": "File",
+    "NO_INSTRUCTIONS": "No program loaded in memory"
 }
