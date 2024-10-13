@@ -32,7 +32,7 @@ def is_address_valid(address: int) -> bool:
     """ Returns if the address is aligned to the word (last 00 bits)
     """
     address_in_bits = int_to_bits(address)
-    return address_in_bits[len(address_in_bits)-2:len(address_in_bits)]
+    return address_in_bits[len(address_in_bits)-2:len(address_in_bits)] == '00'
 
 def is_binary_program_valid(program: str) -> bool:
     """ Returns if the passed binary program (composed only by 0s and 1s) is valid or not

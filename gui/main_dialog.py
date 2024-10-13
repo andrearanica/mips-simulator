@@ -144,7 +144,9 @@ class MainDialog:
         self.memory_table.heading('value', text=self.message_manager.get_message('VALUE'))
 
     def on_click_import_file(self):
-        file_path = filedialog.askopenfilename()
+        file_types = ((self.message_manager.get_message('ASSEMBLY_FILE'), '*.asm'), ('All files', '*.*'))
+        file_path = filedialog.askopenfilename(title=self.message_manager.get_message('SELECT_FILE'), 
+                                               filetypes=file_types)
         self.instructions = []
         if file_path:
             with open(file_path, 'r+') as file_reader:
@@ -155,7 +157,7 @@ class MainDialog:
                 self.instructions = self.__get_assembled_program(file_content)
             else:
                 if not utils.is_binary_program_valid(file_content):
-                    messagebox.askokcancel('Error', 'The imported file is not a valid file; please check that the syntax is correct')
+                    messagebox.askokcancel(self.message_manager.get_message('ERROR'), self.message_manager.get_message('NOT_VALID_FILE_ERROR'))
                 else:
                     self.instructions = utils.split_program_to_instructions(file_content)
             # for i, instruction in enumerate(self.instructions):
@@ -175,10 +177,9 @@ class MainDialog:
         
         if text_segment_addresses:
             self.datapath.run()
-            self.message_label.config(text='Execution stopped')
             self.__update_interface()
         else:
-            messagebox.showerror('Error', self.message_manager.get_message('NO_INSTRUCTIONS'))
+            messagebox.showerror(self.message_manager.get_message('ERROR'), self.message_manager.get_message('NO_INSTRUCTIONS'))
 
     def run_code_step_by_step(self):
         text_segment_addresses = [address 
@@ -186,8 +187,8 @@ class MainDialog:
             if constants.TEXT_SEGMENT_START <= address < constants.DATA_SEGMENT_START]
         if text_segment_addresses and self.datapath.PC <= max(text_segment_addresses):
             self.datapath.run_single_instruction()
-        else:
-            messagebox.showerror('Error', self.message_manager.get_message('NO_INSTRUCTIONS'))
+        elif not text_segment_addresses:
+            messagebox.showerror(self.message_manager.get_message('ERROR'), self.message_manager.get_message('NO_INSTRUCTIONS'))
 
         self.__update_interface()
     
@@ -205,8 +206,7 @@ class MainDialog:
         for register_number in range(32):
             self.registers_table.insert('', tk.END, values=(REGISTERS_NAMES.get(register_number), 0))
 
-        # Reset code textbox
-        # self.code_textbox.delete('1.0', tk.END)
+        # Reset memory textbox
         for item in self.memory_table.get_children():
             self.memory_table.delete(item)
         self.message_label.config(text='')
@@ -255,7 +255,7 @@ class MainDialog:
                 word_address = address
 
         if self.datapath.state != DatapathStates.OK:
-            self.message_label.config(text=self.message_manager.get_message(self.datapath.state.value))
+            messagebox.showinfo('Info', self.message_manager.get_message(self.datapath.state.value))
 
         self.__build_menu()
 

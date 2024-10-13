@@ -18,5 +18,10 @@
     "SYSTEM": "System",
     "LANGUAGE": "Language",
     "FILE": "File",
-    "NO_INSTRUCTIONS": "No program loaded in memory"
+    "NO_INSTRUCTIONS": "No program loaded in memory",
+    "SELECT_FILE": "Select file",
+    "ASSEMBLY_FILE": "Assembly file",
+    "ALL_FILES": "All files",
+    "ERROR": "Error",
+    "NOT_VALID_FILE_ERROR": "The imported file is not a valid file; please check that the syntax is correct"
 }

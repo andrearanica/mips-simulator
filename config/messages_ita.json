@@ -18,5 +18,10 @@
     "SYSTEM": "Sistema",
     "LANGUAGE": "Lingua",
     "FILE": "File",
-    "NO_INSTRUCTONS": "Non è stato caricato nessun programma in memoria"
+    "NO_INSTRUCTIONS": "Non è stato caricato nessun programma in memoria",
+    "SELECT_FILE": "Seleziona file",
+    "ASSEMBLY_FILE": "Assembly file",
+    "ALL_FILES": "Tutti i file",
+    "ERROR": "Errore",
+    "NOT_VALID_FILE_ERROR": "File selezionato non valido; controllare che la sintassi sia corretta"
 }

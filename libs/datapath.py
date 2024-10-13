@@ -53,10 +53,10 @@ class Datapath:
 
     def run_single_instruction(self):
         self.__state = DatapathStates.OK
-        try:
-            self.__run_instruction()
-        except Exception as e:
-            self.__handle_exception(e)
+        #try:
+        self.__run_instruction()
+        #except Exception as e:
+        #    self.__handle_exception(e)
 
     def __handle_exception(self, exception: Exception):
         if isinstance(exception, BreakException):
