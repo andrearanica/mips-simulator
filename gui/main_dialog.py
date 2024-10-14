@@ -171,15 +171,8 @@ class MainDialog:
         self.__reset_interface()
 
     def run_code(self):
-        text_segment_addresses = [address 
-            for address in self.datapath.memory.get_data().keys() 
-            if constants.TEXT_SEGMENT_START <= address < constants.DATA_SEGMENT_START]
-        
-        if text_segment_addresses:
-            self.datapath.run()
-            self.__update_interface()
-        else:
-            messagebox.showerror(self.message_manager.get_message('ERROR'), self.message_manager.get_message('NO_INSTRUCTIONS'))
+        while self.datapath.state != DatapathStates.BREAK:
+            self.run_code_step_by_step()
 
     def run_code_step_by_step(self):
         text_segment_addresses = [address 
@@ -191,7 +184,7 @@ class MainDialog:
             messagebox.showerror(self.message_manager.get_message('ERROR'), self.message_manager.get_message('NO_INSTRUCTIONS'))
 
         self.__update_interface()
-    
+
     def __get_assembled_program(self, program: str):
         """ Gets the program file content and returns a list of instructions instances
         """

@@ -46,17 +46,14 @@ class Datapath:
 
     def run(self) -> None:
         while self.state != DatapathStates.BREAK:
-            try:
-                self.__run_instruction()
-            except Exception as e:
-                self.__handle_exception(e)
+            self.run_single_instruction()
 
     def run_single_instruction(self):
         self.__state = DatapathStates.OK
-        #try:
-        self.__run_instruction()
-        #except Exception as e:
-        #    self.__handle_exception(e)
+        try:
+            self.__run_instruction()
+        except Exception as e:
+            self.__handle_exception(e)
 
     def __handle_exception(self, exception: Exception):
         if isinstance(exception, BreakException):
@@ -207,7 +204,7 @@ class Datapath:
         """ Writes or loads information from the memory
         """
         if not is_address_valid(address):
-            raise RuntimeError(f'Address {address} is not aligned to the word')
+            raise NotValidMemoryAddressException(f'Address {address} is not aligned to the word')
         
         if instruction.opcode == 0x23:
             # Load word
