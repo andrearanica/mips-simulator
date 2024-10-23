@@ -229,17 +229,17 @@ def get_instruction_object_from_binary(instruction: str):
         # It is a BEQ instruction
         rs = bits_to_int(instruction[6:11])
         rt = bits_to_int(instruction[11:16])
-        offset = bits_to_int(instruction[16:32])
+        offset = bits_to_int(instruction[16:32], True)
         instruction_obj = BranchOnEqualInstruction(bits_to_int(opcode), rs, rt, offset)
     elif opcode == '000010':
         # It is a jump instruction
         target = bits_to_int(instruction[6:32])
-        instruction_obj = JumpInstruction(target)
+        instruction_obj = JumpInstruction(target, True)
     elif bits_to_int(opcode) in constants.ITYPE_OPCODES.values():
         # It is a I-Type instruction
         rs = bits_to_int(instruction[6:11])
         rt = bits_to_int(instruction[11:16])
-        immediate = bits_to_int(instruction[16:32])
+        immediate = bits_to_int(instruction[16:32], True)
         instruction_obj = ITypeInstruction(bits_to_int(opcode), rs, rt, immediate)
     elif bits_to_int(opcode) in constants.MEMORY_OPCODES.values():
         rs = bits_to_int(instruction[6:11])

@@ -210,7 +210,7 @@ class MainDialog:
         for item in self.registers_table.get_children():
             self.registers_table.delete(item)
         for register_number, register_value in enumerate(self.datapath.register_file.registers):
-            self.registers_table.insert('', tk.END, values=(REGISTERS_NAMES.get(register_number), convert(register_value, self.config['system'])))
+            self.registers_table.insert('', tk.END, values=(REGISTERS_NAMES.get(register_number), convert(register_value, self.config['system'], care_sign=True)))
         
         for item in self.memory_table.get_children():
             self.memory_table.delete(item)

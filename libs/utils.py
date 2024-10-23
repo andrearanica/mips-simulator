@@ -2,25 +2,25 @@ from libs import constants
 
 import math
 
-def int_to_bits(n: int, n_ciphers: int=0) -> str:
-    """ Returns the integer represented in binary as a string
-    """
-    binary_n = "{0:b}".format(n)
-    while n_ciphers and len(binary_n) < n_ciphers:
-        binary_n = "0"+binary_n
-    return binary_n
+def int_to_bits(value: int, bits: int=0):
+    if value >= 0:
+        return bin(value)[2:].zfill(bits)
+    else:
+        return bin((1 << bits) + value)[2:]
 
-def bits_to_int(bits: str) -> int:
+def bits_to_int(bits: str, ca2: bool=False) -> int:
     """ Returns the integer represented by the passed string
     """
     n = 0
-    sign = 1
-    if bits[0] == '-':
-        bits = bits[1:]
-        sign = -1
-    for i, b in enumerate(bits[::-1]):
-        n += int(b) * math.pow(2, i)
-    return sign*int(n)
+    if not ca2 or bits[0] == '0':
+        # It's a positive number
+        for i, b in enumerate(bits[::-1]):
+            n += int(b) * math.pow(2, i)
+    else:
+        # It's a negative number
+        inv = ''.join('1' if b == '0' else '0' for b in bits)
+        n = -1*(int(inv, 2)+1)
+    return int(n)
 
 def is_break_instruction(instruction: str) -> bool:
     return instruction[0:6] == '000000' and instruction[26:32] == '001101'
@@ -48,23 +48,29 @@ def split_program_to_instructions(program: str) -> list:
         program = program[32:]
     return instructions
 
-def convert(number: int, system: int, n_ciphers=0) -> int:
+def convert(number: int, system: int, n_ciphers:int=0, care_sign:bool=False) -> int:
     """ Converts the number from the decimal system to the desired one
     """
     if number == 0:
         return 0
-
-    converted_number = ''
-    while number != 0:
-        rest = normalize_cipher(int(number % system))
-        converted_number += rest
-        number = int(number / system)
     
-    converted_number = converted_number[::-1]
-    while n_ciphers and len(converted_number) < n_ciphers:
-        converted_number = '0' + converted_number
+    if system == constants.Systems.DECIMAL.value:
+        return number
+    elif system == constants.Systems.BINARY.value:
+        return int_to_bits(number, 32)
+    else:
+        converted_number = ''
 
-    return converted_number
+        while number != 0:
+            rest = normalize_cipher(int(number % system))
+            converted_number += rest
+            number = int(number / system)
+        
+        converted_number = converted_number[::-1]
+        while n_ciphers and len(converted_number) < n_ciphers:
+            converted_number = '0' + converted_number
+
+        return converted_number
 
 def normalize_cipher(n: int):
     a_char = ord('A')

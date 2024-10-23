@@ -130,7 +130,7 @@ class Assembler:
 
             opcode_str = int_to_bits(int(opcode), 6)
             immediate_str = int_to_bits(int(immediate), 26)
-            
+
             instruction_str = f'{opcode_str}{immediate_str}'
         
         elif opcode == OPCODES.get('lw') or opcode == OPCODES.get('sw'):
