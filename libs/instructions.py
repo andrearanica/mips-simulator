@@ -118,7 +118,7 @@ class ITypeInstruction(RegisterInstruction):
         self._immediate = immediate
 
     def __str__(self) -> str:
-        return f"{int_to_bits(self.opcode, 6)}{int_to_bits(self.rs, 5)}{int_to_bits(self.rt, 5)}{int_to_bits(self.immediate, 16)}"
+        return f"{int_to_bits(self.opcode, 6)}{int_to_bits(self.rs, 5)}{int_to_bits(self.rt, 5)}{int_to_bits(self.immediate, 16, True)}"
     
     def to_text(self) -> str:
         for instruction, opcode in constants.ITYPE_OPCODES.items():
@@ -218,13 +218,15 @@ def get_instruction_object_from_binary(instruction: str):
             instruction_obj = SystemCallInstruction()
         elif funct == '001101':                 # It is a break instruction
             return BreakInstruction()
-        elif funct in constants.FUNCT_CODES:
+        elif bits_to_int(funct) in constants.FUNCT_CODES.values():
             rs = bits_to_int(instruction[6:11])
             rt = bits_to_int(instruction[11:16])
             rd = bits_to_int(instruction[16:21])
             shamt = bits_to_int(instruction[21:26])
             funct = bits_to_int(instruction[26:32])
             instruction_obj = RTypeInstruction(bits_to_int(opcode), rs, rt, rd, shamt, funct)
+        else:
+            raise RuntimeError(f"Funct code {funct} not supported")
     elif opcode == '000100':
         # It is a BEQ instruction
         rs = bits_to_int(instruction[6:11])
@@ -244,7 +246,7 @@ def get_instruction_object_from_binary(instruction: str):
     elif bits_to_int(opcode) in constants.MEMORY_OPCODES.values():
         rs = bits_to_int(instruction[6:11])
         rt = bits_to_int(instruction[11:16])
-        immediate = bits_to_int(instruction[16:32])
+        immediate = bits_to_int(instruction[16:32], True)
         instruction_obj = MemoryInstruction(bits_to_int(opcode), rs, rt, immediate)
     else:
         raise RuntimeError(f'Instruction {instruction} not supported')

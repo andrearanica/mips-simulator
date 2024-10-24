@@ -2,9 +2,9 @@ from libs import constants
 
 import math
 
-def int_to_bits(value: int, bits: int=0):
-    if value >= 0:
-        return bin(value)[2:].zfill(bits)
+def int_to_bits(value: int, bits: int=0, ca2: bool=False):
+    if not ca2 or value >= 0:
+        return bin(abs(value))[2:].zfill(bits)
     else:
         return bin((1 << bits) + value)[2:]
 
@@ -48,7 +48,7 @@ def split_program_to_instructions(program: str) -> list:
         program = program[32:]
     return instructions
 
-def convert(number: int, system: int, n_ciphers:int=0, care_sign:bool=False) -> int:
+def convert(number: int, system: int, n_ciphers:int=0, care_sign=False) -> int:
     """ Converts the number from the decimal system to the desired one
     """
     if number == 0:
@@ -57,7 +57,7 @@ def convert(number: int, system: int, n_ciphers:int=0, care_sign:bool=False) -> 
     if system == constants.Systems.DECIMAL.value:
         return number
     elif system == constants.Systems.BINARY.value:
-        return int_to_bits(number, 32)
+        return int_to_bits(number, 32, True)
     else:
         converted_number = ''
 
