@@ -144,7 +144,7 @@ class BranchOnEqualInstruction(RegisterInstruction):
         self._offset = offset
 
     def __str__(self) -> str:
-        return f"{int_to_bits(self.opcode, 6)}{int_to_bits(self.rs, 5)}{int_to_bits(self.rt, 5)}{int_to_bits(self.offset, 16)}"
+        return f"{int_to_bits(self.opcode, 6)}{int_to_bits(self.rs, 5)}{int_to_bits(self.rt, 5)}{int_to_bits(self.offset, 16, True)}"
 
     def to_text(self):
         rs_name = constants.REGISTERS_NAMES.get(self.rs)
@@ -167,7 +167,7 @@ class JumpInstruction(Instruction):
         self._target = target
     
     def __str__(self) -> str:
-        return f"000010{int_to_bits(self.target, 26)}"
+        return f"000010{int_to_bits(self.target, 26, True)}"
     
     def to_text(self):
         return f'j {self.target}'
@@ -235,8 +235,8 @@ def get_instruction_object_from_binary(instruction: str):
         instruction_obj = BranchOnEqualInstruction(bits_to_int(opcode), rs, rt, offset)
     elif opcode == '000010':
         # It is a jump instruction
-        target = bits_to_int(instruction[6:32])
-        instruction_obj = JumpInstruction(target, True)
+        target = bits_to_int(instruction[6:32], True)
+        instruction_obj = JumpInstruction(target)
     elif bits_to_int(opcode) in constants.ITYPE_OPCODES.values():
         # It is a I-Type instruction
         rs = bits_to_int(instruction[6:11])

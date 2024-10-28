@@ -129,9 +129,11 @@ class Assembler:
 
 
             opcode_str = int_to_bits(int(opcode), 6)
-            immediate_str = int_to_bits(int(immediate), 26)
+            immediate_str = int_to_bits(int(immediate), 32, True)
+            immediate_str = immediate_str[4:30]
 
             instruction_str = f'{opcode_str}{immediate_str}'
+            print(instruction_str)
         
         elif opcode == OPCODES.get('lw') or opcode == OPCODES.get('sw'):
             _, rt, offset_with_base = instruction.replace(',', '').split(' ')

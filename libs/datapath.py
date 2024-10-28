@@ -128,7 +128,6 @@ class Datapath:
         # I calculate the branch address, so if the instruction is a BEQ I already have it
         offset = str(instruction)[16:32]
         self.__alu.src_a = self.__PC-4
-        print(self.__alu.src_a)
         self.__alu.src_b = bits_to_int(offset, True)
         
         self.__alu.alu_operation = AluOperations.SUM
@@ -217,8 +216,7 @@ class Datapath:
             # Store word
             data_to_write = self.register_file.get_register(instruction.rt)
             data_to_write_str = str(int_to_bits(data_to_write, 32, True))
-            print(data_to_write, data_to_write_str)
-
+            
             bytes = [
                 bits_to_int(data_to_write_str[24:32]),
                 bits_to_int(data_to_write_str[16:24]),
