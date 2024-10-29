@@ -23,5 +23,6 @@
     "ASSEMBLY_FILE": "Assembly file",
     "ALL_FILES": "Tutti i file",
     "ERROR": "Errore",
-    "NOT_VALID_FILE_ERROR": "File selezionato non valido; controllare che la sintassi sia corretta"
+    "NOT_VALID_FILE_ERROR": "File selezionato non valido; controllare che la sintassi sia corretta",
+    "LAST_FILES": "Recenti"
 }

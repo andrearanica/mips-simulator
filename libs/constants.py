@@ -114,5 +114,8 @@ CONFIG_FILE_PATH = os.path.join(CONFIG_PATH, 'config.json')
 
 STANDARD_CONFIG = {
     'system': Systems.DECIMAL.value, 
-    'language': Languages.ENG.value
+    'language': Languages.ENG.value,
+    'last_files': []
 }
+
+MAX_LAST_FILES = 5

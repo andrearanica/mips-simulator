@@ -28,7 +28,11 @@ class MainDialog:
             return constants.STANDARD_CONFIG
         with open(constants.CONFIG_FILE_PATH, 'r+') as file_reader:
             try:
-                return json.loads(file_reader.read())
+                config = json.loads(file_reader.read())
+                for key, default_value in constants.STANDARD_CONFIG.items():
+                    if not config.get(key):
+                        config[key] = default_value
+                return config
             except:
                 return constants.STANDARD_CONFIG
 
@@ -100,10 +104,15 @@ class MainDialog:
         self.menu_bar.add_cascade(label=self.message_manager.get_message('FILE'), menu=self.file_menu)
         self.menu_bar.add_cascade(label=self.message_manager.get_message('SYSTEM'), menu=self.system_menu)
         self.menu_bar.add_cascade(label=self.message_manager.get_message('LANGUAGE'), menu=self.language_menu)
+        
+        self.last_files_menu = tk.Menu(self.file_menu, tearoff=1)
+        for file in self.config.get('last_files'):
+            self.last_files_menu.add_command(label=file, command= lambda file_path=file: self.__import_file(file_path))
 
         self.file_menu.add_command(label=self.message_manager.get_message('OPEN_FILE'), command=self.on_click_import_file)
         self.file_menu.add_command(label=self.message_manager.get_message('RESET'), command=self.on_click_reset)
-
+        self.file_menu.add_cascade(label=self.message_manager.get_message('LAST_FILES'), menu=self.last_files_menu)
+        
         label = self.message_manager.get_message('BINARY')
         if self.config['system'] == constants.Systems.BINARY.value:
             label += ' (*)'
@@ -149,21 +158,31 @@ class MainDialog:
                                                filetypes=file_types)
         self.instructions = []
         if file_path:
-            with open(file_path, 'r+') as file_reader:
-                file_content = file_reader.read()
-                
-            self.__reset_interface()
-            if '.asm' in file_path:
-                self.instructions = self.__get_assembled_program(file_content)
+            self.__import_file(file_path)
+
+    def __import_file(self, file_path: str):
+        """ Converts the given file in binary and loads it into the datapath
+        """
+        for i, saved_path in enumerate(self.config.get('last_files')):
+            if file_path == saved_path:
+                self.config['last_files'].pop(i)
+        self.config['last_files'].insert(0, file_path)
+
+        with open(file_path, 'r+') as file_reader:
+            file_content = file_reader.read()
+            
+        self.__reset_interface()
+        if '.asm' in file_path:
+            self.instructions = self.__get_assembled_program(file_content)
+        else:
+            if not utils.is_binary_program_valid(file_content):
+                messagebox.askokcancel(self.message_manager.get_message('ERROR'), self.message_manager.get_message('NOT_VALID_FILE_ERROR'))
             else:
-                if not utils.is_binary_program_valid(file_content):
-                    messagebox.askokcancel(self.message_manager.get_message('ERROR'), self.message_manager.get_message('NOT_VALID_FILE_ERROR'))
-                else:
-                    self.instructions = utils.split_program_to_instructions(file_content)
-            # for i, instruction in enumerate(self.instructions):
-                # self.code_textbox.insert(tk.END, f'{i} | {instruction}\n')
-            self.datapath.load_program_in_memory([str(instruction) for instruction in self.instructions])
-            self.__update_interface()
+                self.instructions = utils.split_program_to_instructions(file_content)
+        # for i, instruction in enumerate(self.instructions):
+            # self.code_textbox.insert(tk.END, f'{i} | {instruction}\n')
+        self.datapath.load_program_in_memory([str(instruction) for instruction in self.instructions])
+        self.__update_interface()
 
     def on_click_reset(self):
         self.instructions = []
