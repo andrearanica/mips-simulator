@@ -167,7 +167,7 @@ class JumpInstruction(Instruction):
         self._target = target
     
     def __str__(self) -> str:
-        return f"000010{int_to_bits(self.target, 26, True)}"
+        return f"000010{int_to_bits(self.target, 26)}"
     
     def to_text(self):
         return f'j {self.target}'

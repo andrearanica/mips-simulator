@@ -127,13 +127,10 @@ class Assembler:
                 # if immediate == None:
                 #     raise RuntimeError(f'Label {immediate} has not been defined')
 
-
             opcode_str = int_to_bits(int(opcode), 6)
-            immediate_str = int_to_bits(int(immediate), 32, True)
-            immediate_str = immediate_str[4:30]
+            immediate_str = int_to_bits(int(immediate), 26, True)
 
             instruction_str = f'{opcode_str}{immediate_str}'
-            print(instruction_str)
         
         elif opcode == OPCODES.get('lw') or opcode == OPCODES.get('sw'):
             _, rt, offset_with_base = instruction.replace(',', '').split(' ')

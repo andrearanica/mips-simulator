@@ -239,7 +239,6 @@ class Datapath:
             self.__PC = new_address
     
     def __execute_jump_instruction(self, instruction: JumpInstruction):
-        # The new PC is formed by the last 26 bits of the instruction
-        # shifted left and the 4 upper bits of the current PC
-        address_str = int_to_bits(self.__PC)[0:4] + str(instruction.target) + '00'
-        self.__PC = bits_to_int(address_str, True)
+        # Semplification of the real instruction: the 26 bits represent the actual target, in the real MIPS the last two bits
+        # and first 4 bits were not included
+        self.__PC = instruction.target
