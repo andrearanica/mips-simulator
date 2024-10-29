@@ -117,7 +117,7 @@ class Assembler:
             shamt_str = int_to_bits(int(shamt), 5)
 
             instruction_str = f'{opcode_str}{rs_str}{rt_str}{rd_str}{shamt_str}{int_to_bits(funct_code, 6)}'
-        
+
         elif opcode == OPCODES.get('j') or opcode == OPCODES.get('jal'):
             _, immediate = instruction.replace(',', '').split(' ')
             
@@ -127,10 +127,9 @@ class Assembler:
                 # if immediate == None:
                 #     raise RuntimeError(f'Label {immediate} has not been defined')
 
-
             opcode_str = int_to_bits(int(opcode), 6)
-            immediate_str = int_to_bits(int(immediate), 26)
-            
+            immediate_str = int_to_bits(int(immediate), 26, True)
+
             instruction_str = f'{opcode_str}{immediate_str}'
         
         elif opcode == OPCODES.get('lw') or opcode == OPCODES.get('sw'):
@@ -148,7 +147,7 @@ class Assembler:
             base_register = get_register_number_from_name(base_register)
             rt_str = int_to_bits(rt, 5)
             base_register_str = int_to_bits(base_register, 5)
-            offset_str = int_to_bits(int(offset), 16)
+            offset_str = int_to_bits(int(offset), 16, True)
 
             instruction_str = f'{opcode_str}{base_register_str}{rt_str}{offset_str}'
 
@@ -167,8 +166,8 @@ class Assembler:
             opcode_str = int_to_bits(opcode, 6)
             rs_str = int_to_bits(rs, 5)
             rt_str = int_to_bits(rt, 5)
-            immediate_str = int_to_bits(int(immediate), 16)
-
+            immediate_str = int_to_bits(int(immediate), 16, True)
+            
             instruction_str = f'{opcode_str}{rs_str}{rt_str}{immediate_str}'
         else:
             raise RuntimeError(f'Instruction {instruction} is not supported by the assembler')

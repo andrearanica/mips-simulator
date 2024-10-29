@@ -127,8 +127,9 @@ class Datapath:
 
         # I calculate the branch address, so if the instruction is a BEQ I already have it
         offset = str(instruction)[16:32]
-        self.__alu.src_a = self.__PC
-        self.__alu.src_b = bits_to_int(offset)
+        self.__alu.src_a = self.__PC-4
+        self.__alu.src_b = bits_to_int(offset, True)
+        
         self.__alu.alu_operation = AluOperations.SUM
         self.__alu_out = self.__alu.get_result()
 
@@ -174,7 +175,8 @@ class Datapath:
     def __execute_itype_instruction(self, instruction: ITypeInstruction):
         is_memory_instruction = False
         self.__alu.src_a = self.__A
-        immediate = bits_to_int(str(instruction)[16:32])
+        immediate = bits_to_int(str(instruction)[16:32], True)
+        
         self.__alu.src_b = immediate
 
         # I understand the type of the instruction by the opcode
@@ -213,8 +215,8 @@ class Datapath:
         else:
             # Store word
             data_to_write = self.register_file.get_register(instruction.rt)
-            data_to_write_str = str(int_to_bits(data_to_write, 32))
-
+            data_to_write_str = str(int_to_bits(data_to_write, 32, True))
+            
             bytes = [
                 bits_to_int(data_to_write_str[24:32]),
                 bits_to_int(data_to_write_str[16:24]),
@@ -237,7 +239,6 @@ class Datapath:
             self.__PC = new_address
     
     def __execute_jump_instruction(self, instruction: JumpInstruction):
-        # The new PC is formed by the last 26 bits of the instruction
-        # shifted left and the 4 upper bits of the current PC
-        address_str = int_to_bits(self.__PC)[0:4] + str(instruction.target) + '00'
-        self.__PC = bits_to_int(address_str)
+        # Semplification of the real instruction: the 26 bits represent the actual target, in the real MIPS the last two bits
+        # and first 4 bits were not included
+        self.__PC = instruction.target
