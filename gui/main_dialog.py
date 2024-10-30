@@ -8,7 +8,7 @@ from libs.constants import Systems
 from libs.datapath import Datapath, DatapathStates
 from libs.constants import REGISTERS_NAMES, Languages
 from libs.message_manager import MessageManager
-from gui.terminal import Terminal
+from gui.console import ConsoleDialog
 
 import tkinter as tk
 from tkinter import ttk
@@ -101,10 +101,12 @@ class MainDialog:
         self.file_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.system_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.language_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.simulator_menu = tk.Menu(self.menu_bar, tearoff=1)
         self.menu_bar.add_cascade(label=self.message_manager.get_message('FILE'), menu=self.file_menu)
         self.menu_bar.add_cascade(label=self.message_manager.get_message('SYSTEM'), menu=self.system_menu)
         self.menu_bar.add_cascade(label=self.message_manager.get_message('LANGUAGE'), menu=self.language_menu)
-        
+        self.menu_bar.add_cascade(label=self.message_manager.get_message('SIMULATOR'), menu=self.simulator_menu)
+
         self.last_files_menu = tk.Menu(self.file_menu, tearoff=1)
         for file in self.config.get('last_files'):
             self.last_files_menu.add_command(label=file, command= lambda file_path=file: self.__import_file(file_path))
@@ -138,6 +140,8 @@ class MainDialog:
             label += ' (*)'
         self.language_menu.add_command(label=label, command= lambda: self.set_language(Languages.ENG.value))
 
+        self.simulator_menu.add_command(label=self.message_manager.get_message('SHOW_CONSOLE'), command=self.show_console)
+
         self.root.config(menu=self.menu_bar)
 
     def __reload_messages(self):
@@ -151,6 +155,11 @@ class MainDialog:
         self.registers_table.heading('value', text=self.message_manager.get_message('VALUE'))
         self.memory_table.heading('address', text=self.message_manager.get_message('ADDRESS'))
         self.memory_table.heading('value', text=self.message_manager.get_message('VALUE'))
+
+    def show_console(self):
+        console_root = tk.Tk()
+        console_dialog = ConsoleDialog(console_root, self.datapath.console)
+        console_root.mainloop()
 
     def on_click_import_file(self):
         file_types = ((self.message_manager.get_message('ASSEMBLY_FILE'), '*.asm'), ('All files', '*.*'))
@@ -215,6 +224,7 @@ class MainDialog:
         # Reset register table
         for item in self.registers_table.get_children():
             self.registers_table.delete(item)
+        self.registers_table.insert('', tk.END, values=('PC', 0))
         for register_number in range(32):
             self.registers_table.insert('', tk.END, values=(REGISTERS_NAMES.get(register_number), 0))
 
@@ -228,6 +238,7 @@ class MainDialog:
     def __update_interface(self):
         for item in self.registers_table.get_children():
             self.registers_table.delete(item)
+        self.registers_table.insert('', tk.END, values=('PC', self.datapath.PC))
         for register_number, register_value in enumerate(self.datapath.register_file.registers):
             self.registers_table.insert('', tk.END, values=(REGISTERS_NAMES.get(register_number), convert(register_value, self.config['system'])))
         

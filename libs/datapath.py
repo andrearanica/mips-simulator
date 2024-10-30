@@ -9,13 +9,11 @@ from libs.constants import MEMORY_DIM, BREAK_INSTRUCTION, TEXT_SEGMENT_START, OP
 from libs.exceptions import *
 from libs.utils import is_break_instruction, int_to_bits, bits_to_int, is_address_valid
 
-
 class DatapathStates(Enum):
     OK = 'DATAPATH_OK'
     BREAK = 'DATAPATH_BREAK'
     MEMORY_ADDRESS_EXCEPTION = 'MEMORY_ADDRESS_NOT_VALID'
     INSTRUCTION_EXCEPTION = 'INSTRUCTION_NOT_VALID'
-
 
 class Datapath:
     def __init__(self) -> None:
@@ -27,11 +25,16 @@ class Datapath:
         self.__register_file = RegisterFile()
         self.__alu_out = 0
         self.__state = DatapathStates.OK
+        self.__console = Console(self)
+
+    @property
+    def PC(self) -> int:
+        return self.__PC
 
     @property
     def memory(self) -> Memory:
         return self.__memory
-    
+
     @property
     def register_file(self) -> RegisterFile:
         return self.__register_file
@@ -43,6 +46,10 @@ class Datapath:
     @property
     def state(self) -> DatapathStates:
         return self.__state
+
+    @property
+    def console(self):
+        return self.__console
 
     def run(self) -> None:
         while self.state != DatapathStates.BREAK:
@@ -242,3 +249,23 @@ class Datapath:
         # Semplification of the real instruction: the 26 bits represent the actual target, in the real MIPS the last two bits
         # and first 4 bits were not included
         self.__PC = instruction.target
+
+class Console:
+    """ Class that contains the receiver and the transmitter of the MIPS
+    """
+    def __init__(self, datapath: Datapath) -> None:
+        self.datapath = datapath
+        self.__text = ''
+
+    def get_receiver_data(self):
+        """ Returns the char inside the Receiver data register
+        """
+
+    def set_transmitter_data(self, data: int):
+        """ Writes the passed value inside the Transmitter data register
+        """
+        self.datapath.memory.write_data(constants.TRANSMITTER_CONTROL_ADDRESS, 1)
+        self.datapath.memory.write_data(constants.TRANSMITTER_DATA_ADDRESS, data)
+
+    def refresh(self):
+        pass
