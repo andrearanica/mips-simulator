@@ -42,9 +42,10 @@ class Memory:
             raise RuntimeError(f'Address {address} is out of the memory limits')
 
     def __str__(self) -> str:
-        # FIXME fix with dictionaries
         result = ""
-        for i, memory_data in enumerate(self.data):
-            if memory_data:
-                result += f"{i} | {memory_data}"
+        all_memory = {}
+        all_memory.update(self.__text_segment)
+        all_memory.update(self.__text_segment)
+        for address, value in all_memory.items():
+            result += f'{address} | {value}\n'
         return result

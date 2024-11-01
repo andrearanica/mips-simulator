@@ -82,6 +82,7 @@ class Datapath:
             raise BreakException('Execution stopped using break instruction')
         self.__decode_instruction(fetched_instruction)
         self.__execute_instruction(fetched_instruction)
+        self.__console.refresh()
 
     def load_program_in_memory(self, instructions: list) -> None:
         """ Loads the instructions inside the memory, starting from the text segment address
@@ -194,8 +195,9 @@ class Datapath:
         elif instruction.opcode == 0xd:
             self.__alu.alu_operation = AluOperations.OR
         elif instruction.opcode == 0x23 or instruction.opcode == 0x2b:
-            self.__alu.alu_operation = AluOperations.SUM
             is_memory_instruction = True
+            self.__alu.src_a = bits_to_int(int_to_bits(self.__alu.src_a, 32, True), False)
+            self.__alu.alu_operation = AluOperations.SUM
         elif instruction.opcode == 0xf:
             self.__alu.shamt = 16
             self.__alu.alu_operation = AluOperations.SLL
@@ -214,7 +216,7 @@ class Datapath:
         """
         if not is_address_valid(address):
             raise NotValidMemoryAddressException(f'Address {address} is not aligned to the word')
-        
+
         if instruction.opcode == 0x23:
             # Load word
             memory_data = self.memory.get_data(address)
@@ -234,7 +236,7 @@ class Datapath:
             for i in range(4):
                 self.memory.write_data(bytes[i], address)
                 address += 1
-    
+
     def __execute_beq_instruction(self, instruction: BranchOnEqualInstruction):
         self.__alu.src_a = self.__A
         self.__alu.src_b = self.__B
@@ -255,11 +257,13 @@ class Console:
     """
     def __init__(self, datapath: Datapath) -> None:
         self.datapath = datapath
-        self.__text = ''
-
-    def get_receiver_data(self):
-        """ Returns the char inside the Receiver data register
+        
+    def get_receiver_data(self) -> int:
+        """ Returns the data inside the Receiver data register
         """
+        received_data = self.datapath.memory.get_data(constants.RECEIVER_DATA_ADDRESS)
+        self.datapath.memory.write_data(1, constants.RECEIVER_CONTROL_ADDRESS)
+        return received_data
 
     def set_transmitter_data(self, data: int):
         """ Writes the passed value inside the Transmitter data register
@@ -268,4 +272,6 @@ class Console:
         self.datapath.memory.write_data(constants.TRANSMITTER_DATA_ADDRESS, data)
 
     def refresh(self):
-        pass
+        received_data = self.get_receiver_data()
+        if received_data:
+            print(f'Received data: {received_data}')
