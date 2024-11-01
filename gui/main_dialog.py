@@ -8,7 +8,7 @@ from libs.constants import Systems
 from libs.datapath import Datapath, DatapathStates
 from libs.constants import REGISTERS_NAMES, Languages
 from libs.message_manager import MessageManager
-from gui.console import ConsoleDialog
+from gui.console_dialog import ConsoleDialog
 
 import tkinter as tk
 from tkinter import ttk
@@ -21,6 +21,7 @@ class MainDialog:
         self.datapath = Datapath()
         self.config = self.__get_config()
         self.message_manager = MessageManager(self.config['language'])
+        self.console_dialog = None
         self.__build_dialog()
 
     def __get_config(self) -> dict:
@@ -158,7 +159,7 @@ class MainDialog:
 
     def show_console(self):
         console_root = tk.Tk()
-        console_dialog = ConsoleDialog(console_root, self.datapath.console)
+        self.console_dialog = ConsoleDialog(console_root, self.datapath.console)
         console_root.mainloop()
 
     def on_click_import_file(self):
@@ -248,9 +249,9 @@ class MainDialog:
         memory_row = ''
         word_address = 0
         for i, (address, value) in enumerate(self.datapath.memory.get_data().items()):
-            memory_row = utils.int_to_bits(value, 8) + memory_row
+            memory_row = utils.int_to_bits(value, 8, True) + memory_row
             # I write a row for each word, so I group 4 bytes to write a row
-            if i+1 and (i+1) % 4 == 0:
+            if (i+1) % 4 == 0:
                 pos_char = ' '
                 if self.datapath.PC == word_address:
                     pos_char = '*'
@@ -262,7 +263,7 @@ class MainDialog:
                     n_ciphers = None
 
                 # I try to convert the row as an instruction
-                memory_row_bits = utils.int_to_bits(memory_row_int, 32)
+                memory_row_bits = utils.int_to_bits(memory_row_int, 32, True)
                 try:
                     instruction = get_instruction_object_from_binary(memory_row_bits)
                 except:
@@ -281,6 +282,9 @@ class MainDialog:
             messagebox.showinfo('Info', self.message_manager.get_message(self.datapath.state.value))
 
         self.__build_menu()
+
+        if self.console_dialog:
+            self.console_dialog.refresh()
 
     def launch_console(self):
         root = tk.Tk()

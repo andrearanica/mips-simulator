@@ -233,6 +233,10 @@ class Datapath:
                 bits_to_int(data_to_write_str[0:8])
             ]
 
+            # If I'm writing the data to be transmitted, I also have to put '0' inside the control register
+            if address == constants.TRANSMITTER_DATA_ADDRESS:
+                self.memory.write_word_data(0, constants.TRANSMITTER_CONTROL_ADDRESS)
+            
             for i in range(4):
                 self.memory.write_data(bytes[i], address)
                 address += 1
@@ -257,21 +261,21 @@ class Console:
     """
     def __init__(self, datapath: Datapath) -> None:
         self.datapath = datapath
+        self.__data = []
         
-    def get_receiver_data(self) -> int:
+    @property
+    def data(self) -> list:
+        return self.__data
+
+    def get_transmitter_data(self) -> int:
         """ Returns the data inside the Receiver data register
         """
-        received_data = self.datapath.memory.get_data(constants.RECEIVER_DATA_ADDRESS)
-        self.datapath.memory.write_data(1, constants.RECEIVER_CONTROL_ADDRESS)
+        received_data = self.datapath.memory.get_data(constants.TRANSMITTER_DATA_ADDRESS)
+        self.datapath.memory.write_word_data(1, constants.TRANSMITTER_CONTROL_ADDRESS)
         return received_data
 
-    def set_transmitter_data(self, data: int):
-        """ Writes the passed value inside the Transmitter data register
-        """
-        self.datapath.memory.write_data(constants.TRANSMITTER_CONTROL_ADDRESS, 1)
-        self.datapath.memory.write_data(constants.TRANSMITTER_DATA_ADDRESS, data)
-
     def refresh(self):
-        received_data = self.get_receiver_data()
-        if received_data:
-            print(f'Received data: {received_data}')
+        transmitter_control_bit = self.datapath.memory.get_data(constants.TRANSMITTER_CONTROL_ADDRESS)
+        transmitter_data = self.get_transmitter_data()
+        if transmitter_data and not transmitter_control_bit:
+            self.__data.append(transmitter_data)

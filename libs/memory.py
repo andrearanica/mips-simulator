@@ -10,7 +10,6 @@ class Memory:
         self.__stack_segment = {}
 
     def get_data(self, address: int|None=None) -> int|dict:
-        # TODO check that address is aligned to word (finishes in 00)
         if address != None:
             if TEXT_SEGMENT_START <= address < DATA_SEGMENT_START:
                 # Get data from text segment
@@ -41,11 +40,26 @@ class Memory:
         else:
             raise RuntimeError(f'Address {address} is out of the memory limits')
 
+    def write_word_data(self, data: int, address: int) -> None:
+        """ Writes data in memory using 4 groups of bytes
+        """
+        data_str = utils.int_to_bits(data, 32, True)
+        data_bytes = [
+            utils.bits_to_int(data_str[24:32]),
+            utils.bits_to_int(data_str[16:24]),
+            utils.bits_to_int(data_str[8:16]),
+            utils.bits_to_int(data_str[0:8])
+        ]
+
+        for i in range(4):
+            self.write_data(data_bytes[i], address)
+            address += 1
+
     def __str__(self) -> str:
         result = ""
         all_memory = {}
         all_memory.update(self.__text_segment)
-        all_memory.update(self.__text_segment)
+        all_memory.update(self.__data_segment)
         for address, value in all_memory.items():
             result += f'{address} | {value}\n'
         return result
