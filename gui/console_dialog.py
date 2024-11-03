@@ -16,6 +16,7 @@ class ConsoleDialog:
         self.textbox = tk.Text(self.root)
         self.textbox.pack()
         self.textbox.bind('<KeyRelease>', self.on_write_char)
+        self.refresh()
 
     def refresh(self):
         self.textbox.delete('1.0', tk.END)

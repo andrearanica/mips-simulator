@@ -109,8 +109,11 @@ class MainDialog:
         self.menu_bar.add_cascade(label=self.message_manager.get_message('SIMULATOR'), menu=self.simulator_menu)
 
         self.last_files_menu = tk.Menu(self.file_menu, tearoff=1)
-        for file in self.config.get('last_files'):
-            self.last_files_menu.add_command(label=file, command= lambda file_path=file: self.__import_file(file_path))
+        for i, file in enumerate(self.config.get('last_files')):
+            if os.path.isfile(file):
+                self.last_files_menu.add_command(label=file, command= lambda file_path=file: self.__import_file(file_path))
+            else:
+                self.config['last_files'].pop(i)
 
         self.file_menu.add_command(label=self.message_manager.get_message('OPEN_FILE'), command=self.on_click_import_file)
         self.file_menu.add_command(label=self.message_manager.get_message('RESET'), command=self.on_click_reset)
@@ -200,8 +203,11 @@ class MainDialog:
         self.__reset_interface()
 
     def run_code(self):
-        while self.datapath.state != DatapathStates.BREAK:
-            self.run_code_step_by_step()
+        if self.datapath.state != DatapathStates.OK:
+            messagebox.showinfo('Info', self.message_manager.get_message(self.datapath.state.value))
+        else:
+            while self.datapath.state != DatapathStates.BREAK:
+                self.run_code_step_by_step()
 
     def run_code_step_by_step(self):
         text_segment_addresses = [address 
@@ -209,9 +215,7 @@ class MainDialog:
             if constants.TEXT_SEGMENT_START <= address < constants.DATA_SEGMENT_START]
         if text_segment_addresses and self.datapath.PC <= max(text_segment_addresses):
             self.datapath.run_single_instruction()
-        elif not text_segment_addresses:
-            messagebox.showerror(self.message_manager.get_message('ERROR'), self.message_manager.get_message('NO_INSTRUCTIONS'))
-
+        
         self.update_interface()
         if self.datapath.state != DatapathStates.OK:
             messagebox.showinfo('Info', self.message_manager.get_message(self.datapath.state.value))

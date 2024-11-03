@@ -7,3 +7,4 @@ libs/__pycache__
 __pycache__/
 
 *.asm
+config/config.json

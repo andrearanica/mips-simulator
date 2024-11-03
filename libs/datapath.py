@@ -14,6 +14,7 @@ class DatapathStates(Enum):
     BREAK = 'DATAPATH_BREAK'
     MEMORY_ADDRESS_EXCEPTION = 'MEMORY_ADDRESS_NOT_VALID'
     INSTRUCTION_EXCEPTION = 'INSTRUCTION_NOT_VALID'
+    EMPTY = 'NO_INSTRUCTIONS'
 
 class Datapath:
     def __init__(self) -> None:
@@ -24,7 +25,7 @@ class Datapath:
         self.__memory = Memory()
         self.__register_file = RegisterFile()
         self.__alu_out = 0
-        self.__state = DatapathStates.OK
+        self.__state = DatapathStates.EMPTY
         self.__console = Console(self)
 
     @property
@@ -56,7 +57,6 @@ class Datapath:
             self.run_single_instruction()
 
     def run_single_instruction(self):
-        self.__state = DatapathStates.OK
         try:
             self.__run_instruction()
         except Exception as e:
@@ -105,6 +105,8 @@ class Datapath:
             for byte in bytes:
                 self.__memory.write_data(bits_to_int(byte), address_to_write)
                 address_to_write += 1
+
+        self.__state = DatapathStates.OK
 
     def __fetch_instruction(self):
         """ Reads from the memory the instruction stored at the PC
