@@ -39,12 +39,12 @@ class MainDialog:
 
     def set_system(self, system: int) -> None:
         self.config['system'] = system
-        self.__update_interface()
+        self.update_interface()
 
     def set_language(self, language: str) -> None:
         self.config['language'] = language
         self.message_manager.language = language
-        self.__update_interface()
+        self.update_interface()
         self.__reload_messages()
 
     def __build_dialog(self):
@@ -159,7 +159,7 @@ class MainDialog:
 
     def show_console(self):
         console_root = tk.Tk()
-        self.console_dialog = ConsoleDialog(console_root, self.datapath.console)
+        self.console_dialog = ConsoleDialog(console_root, self.datapath.console, self)
         console_root.mainloop()
 
     def on_click_import_file(self):
@@ -192,7 +192,7 @@ class MainDialog:
         # for i, instruction in enumerate(self.instructions):
             # self.code_textbox.insert(tk.END, f'{i} | {instruction}\n')
         self.datapath.load_program_in_memory([str(instruction) for instruction in self.instructions])
-        self.__update_interface()
+        self.update_interface()
 
     def on_click_reset(self):
         self.instructions = []
@@ -212,7 +212,9 @@ class MainDialog:
         elif not text_segment_addresses:
             messagebox.showerror(self.message_manager.get_message('ERROR'), self.message_manager.get_message('NO_INSTRUCTIONS'))
 
-        self.__update_interface()
+        self.update_interface()
+        if self.datapath.state != DatapathStates.OK:
+            messagebox.showinfo('Info', self.message_manager.get_message(self.datapath.state.value))
 
     def __get_assembled_program(self, program: str):
         """ Gets the program file content and returns a list of instructions instances
@@ -236,7 +238,7 @@ class MainDialog:
 
         self.__build_menu()
 
-    def __update_interface(self):
+    def update_interface(self):
         for item in self.registers_table.get_children():
             self.registers_table.delete(item)
         self.registers_table.insert('', tk.END, values=('PC', self.datapath.PC))
@@ -265,7 +267,10 @@ class MainDialog:
                 # I try to convert the row as an instruction
                 memory_row_bits = utils.int_to_bits(memory_row_int, 32, True)
                 try:
-                    instruction = get_instruction_object_from_binary(memory_row_bits)
+                    if address < constants.DATA_SEGMENT_START:
+                        instruction = get_instruction_object_from_binary(memory_row_bits)
+                    else:
+                        instruction = None
                 except:
                     instruction = None
                 
@@ -278,12 +283,9 @@ class MainDialog:
             if (i+1) % 4 == 1:
                 word_address = address
 
-        if self.datapath.state != DatapathStates.OK:
-            messagebox.showinfo('Info', self.message_manager.get_message(self.datapath.state.value))
-
         self.__build_menu()
 
-        if self.console_dialog:
+        if self.console_dialog and self.datapath.memory.get_data(constants.TRANSMITTER_CONTROL_ADDRESS) == 1:
             self.console_dialog.refresh()
 
     def launch_console(self):

@@ -219,6 +219,8 @@ class Datapath:
 
         if instruction.opcode == 0x23:
             # Load word
+            if address == constants.RECEIVER_DATA_ADDRESS:
+                self.memory.write_word_data(0, constants.RECEIVER_CONTROL_ADDRESS)
             memory_data = self.memory.get_data(address)
             self.register_file.write(memory_data, instruction.rt)
         else:
@@ -266,6 +268,10 @@ class Console:
     @property
     def data(self) -> list:
         return self.__data
+
+    def set_received_data(self, received_data: int) -> None:
+        self.datapath.memory.write_word_data(1, constants.RECEIVER_CONTROL_ADDRESS)
+        self.datapath.memory.write_word_data(received_data, constants.RECEIVER_DATA_ADDRESS)
 
     def get_transmitter_data(self) -> int:
         """ Returns the data inside the Receiver data register
