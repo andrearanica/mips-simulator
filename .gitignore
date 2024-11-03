@@ -5,3 +5,5 @@
 libs/__pycache__
 
 __pycache__/
+
+*.asm

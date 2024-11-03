@@ -9,13 +9,11 @@ from libs.constants import MEMORY_DIM, BREAK_INSTRUCTION, TEXT_SEGMENT_START, OP
 from libs.exceptions import *
 from libs.utils import is_break_instruction, int_to_bits, bits_to_int, is_address_valid
 
-
 class DatapathStates(Enum):
     OK = 'DATAPATH_OK'
     BREAK = 'DATAPATH_BREAK'
     MEMORY_ADDRESS_EXCEPTION = 'MEMORY_ADDRESS_NOT_VALID'
     INSTRUCTION_EXCEPTION = 'INSTRUCTION_NOT_VALID'
-
 
 class Datapath:
     def __init__(self) -> None:
@@ -27,11 +25,16 @@ class Datapath:
         self.__register_file = RegisterFile()
         self.__alu_out = 0
         self.__state = DatapathStates.OK
+        self.__console = Console(self)
+
+    @property
+    def PC(self) -> int:
+        return self.__PC
 
     @property
     def memory(self) -> Memory:
         return self.__memory
-    
+
     @property
     def register_file(self) -> RegisterFile:
         return self.__register_file
@@ -43,6 +46,10 @@ class Datapath:
     @property
     def state(self) -> DatapathStates:
         return self.__state
+
+    @property
+    def console(self):
+        return self.__console
 
     def run(self) -> None:
         while self.state != DatapathStates.BREAK:
@@ -75,6 +82,7 @@ class Datapath:
             raise BreakException('Execution stopped using break instruction')
         self.__decode_instruction(fetched_instruction)
         self.__execute_instruction(fetched_instruction)
+        self.__console.refresh()
 
     def load_program_in_memory(self, instructions: list) -> None:
         """ Loads the instructions inside the memory, starting from the text segment address
@@ -187,8 +195,9 @@ class Datapath:
         elif instruction.opcode == 0xd:
             self.__alu.alu_operation = AluOperations.OR
         elif instruction.opcode == 0x23 or instruction.opcode == 0x2b:
-            self.__alu.alu_operation = AluOperations.SUM
             is_memory_instruction = True
+            self.__alu.src_a = bits_to_int(int_to_bits(self.__alu.src_a, 32, True), False)
+            self.__alu.alu_operation = AluOperations.SUM
         elif instruction.opcode == 0xf:
             self.__alu.shamt = 16
             self.__alu.alu_operation = AluOperations.SLL
@@ -207,9 +216,11 @@ class Datapath:
         """
         if not is_address_valid(address):
             raise NotValidMemoryAddressException(f'Address {address} is not aligned to the word')
-        
+
         if instruction.opcode == 0x23:
             # Load word
+            if address == constants.RECEIVER_DATA_ADDRESS:
+                self.memory.write_word_data(0, constants.RECEIVER_CONTROL_ADDRESS)
             memory_data = self.memory.get_data(address)
             self.register_file.write(memory_data, instruction.rt)
         else:
@@ -224,10 +235,14 @@ class Datapath:
                 bits_to_int(data_to_write_str[0:8])
             ]
 
+            # If I'm writing the data to be transmitted, I also have to put '0' inside the control register
+            if address == constants.TRANSMITTER_DATA_ADDRESS:
+                self.memory.write_word_data(0, constants.TRANSMITTER_CONTROL_ADDRESS)
+            
             for i in range(4):
                 self.memory.write_data(bytes[i], address)
                 address += 1
-    
+
     def __execute_beq_instruction(self, instruction: BranchOnEqualInstruction):
         self.__alu.src_a = self.__A
         self.__alu.src_b = self.__B
@@ -242,3 +257,31 @@ class Datapath:
         # Semplification of the real instruction: the 26 bits represent the actual target, in the real MIPS the last two bits
         # and first 4 bits were not included
         self.__PC = instruction.target
+
+class Console:
+    """ Class that contains the receiver and the transmitter of the MIPS
+    """
+    def __init__(self, datapath: Datapath) -> None:
+        self.datapath = datapath
+        self.__data = []
+        
+    @property
+    def data(self) -> list:
+        return self.__data
+
+    def set_received_data(self, received_data: int) -> None:
+        self.datapath.memory.write_word_data(1, constants.RECEIVER_CONTROL_ADDRESS)
+        self.datapath.memory.write_word_data(received_data, constants.RECEIVER_DATA_ADDRESS)
+
+    def get_transmitter_data(self) -> int:
+        """ Returns the data inside the Receiver data register
+        """
+        received_data = self.datapath.memory.get_data(constants.TRANSMITTER_DATA_ADDRESS)
+        self.datapath.memory.write_word_data(1, constants.TRANSMITTER_CONTROL_ADDRESS)
+        return received_data
+
+    def refresh(self):
+        transmitter_control_bit = self.datapath.memory.get_data(constants.TRANSMITTER_CONTROL_ADDRESS)
+        transmitter_data = self.get_transmitter_data()
+        if transmitter_data and not transmitter_control_bit:
+            self.__data.append(transmitter_data)

@@ -8,7 +8,7 @@ from libs.constants import Systems
 from libs.datapath import Datapath, DatapathStates
 from libs.constants import REGISTERS_NAMES, Languages
 from libs.message_manager import MessageManager
-from gui.terminal import Terminal
+from gui.console_dialog import ConsoleDialog
 
 import tkinter as tk
 from tkinter import ttk
@@ -21,6 +21,7 @@ class MainDialog:
         self.datapath = Datapath()
         self.config = self.__get_config()
         self.message_manager = MessageManager(self.config['language'])
+        self.console_dialog = None
         self.__build_dialog()
 
     def __get_config(self) -> dict:
@@ -38,12 +39,12 @@ class MainDialog:
 
     def set_system(self, system: int) -> None:
         self.config['system'] = system
-        self.__update_interface()
+        self.update_interface()
 
     def set_language(self, language: str) -> None:
         self.config['language'] = language
         self.message_manager.language = language
-        self.__update_interface()
+        self.update_interface()
         self.__reload_messages()
 
     def __build_dialog(self):
@@ -101,10 +102,12 @@ class MainDialog:
         self.file_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.system_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.language_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.simulator_menu = tk.Menu(self.menu_bar, tearoff=1)
         self.menu_bar.add_cascade(label=self.message_manager.get_message('FILE'), menu=self.file_menu)
         self.menu_bar.add_cascade(label=self.message_manager.get_message('SYSTEM'), menu=self.system_menu)
         self.menu_bar.add_cascade(label=self.message_manager.get_message('LANGUAGE'), menu=self.language_menu)
-        
+        self.menu_bar.add_cascade(label=self.message_manager.get_message('SIMULATOR'), menu=self.simulator_menu)
+
         self.last_files_menu = tk.Menu(self.file_menu, tearoff=1)
         for file in self.config.get('last_files'):
             self.last_files_menu.add_command(label=file, command= lambda file_path=file: self.__import_file(file_path))
@@ -138,6 +141,8 @@ class MainDialog:
             label += ' (*)'
         self.language_menu.add_command(label=label, command= lambda: self.set_language(Languages.ENG.value))
 
+        self.simulator_menu.add_command(label=self.message_manager.get_message('SHOW_CONSOLE'), command=self.show_console)
+
         self.root.config(menu=self.menu_bar)
 
     def __reload_messages(self):
@@ -151,6 +156,11 @@ class MainDialog:
         self.registers_table.heading('value', text=self.message_manager.get_message('VALUE'))
         self.memory_table.heading('address', text=self.message_manager.get_message('ADDRESS'))
         self.memory_table.heading('value', text=self.message_manager.get_message('VALUE'))
+
+    def show_console(self):
+        console_root = tk.Tk()
+        self.console_dialog = ConsoleDialog(console_root, self.datapath.console, self)
+        console_root.mainloop()
 
     def on_click_import_file(self):
         file_types = ((self.message_manager.get_message('ASSEMBLY_FILE'), '*.asm'), ('All files', '*.*'))
@@ -182,7 +192,7 @@ class MainDialog:
         # for i, instruction in enumerate(self.instructions):
             # self.code_textbox.insert(tk.END, f'{i} | {instruction}\n')
         self.datapath.load_program_in_memory([str(instruction) for instruction in self.instructions])
-        self.__update_interface()
+        self.update_interface()
 
     def on_click_reset(self):
         self.instructions = []
@@ -202,7 +212,9 @@ class MainDialog:
         elif not text_segment_addresses:
             messagebox.showerror(self.message_manager.get_message('ERROR'), self.message_manager.get_message('NO_INSTRUCTIONS'))
 
-        self.__update_interface()
+        self.update_interface()
+        if self.datapath.state != DatapathStates.OK:
+            messagebox.showinfo('Info', self.message_manager.get_message(self.datapath.state.value))
 
     def __get_assembled_program(self, program: str):
         """ Gets the program file content and returns a list of instructions instances
@@ -215,6 +227,7 @@ class MainDialog:
         # Reset register table
         for item in self.registers_table.get_children():
             self.registers_table.delete(item)
+        self.registers_table.insert('', tk.END, values=('PC', 0))
         for register_number in range(32):
             self.registers_table.insert('', tk.END, values=(REGISTERS_NAMES.get(register_number), 0))
 
@@ -225,9 +238,10 @@ class MainDialog:
 
         self.__build_menu()
 
-    def __update_interface(self):
+    def update_interface(self):
         for item in self.registers_table.get_children():
             self.registers_table.delete(item)
+        self.registers_table.insert('', tk.END, values=('PC', self.datapath.PC))
         for register_number, register_value in enumerate(self.datapath.register_file.registers):
             self.registers_table.insert('', tk.END, values=(REGISTERS_NAMES.get(register_number), convert(register_value, self.config['system'])))
         
@@ -237,9 +251,9 @@ class MainDialog:
         memory_row = ''
         word_address = 0
         for i, (address, value) in enumerate(self.datapath.memory.get_data().items()):
-            memory_row = utils.int_to_bits(value, 8) + memory_row
+            memory_row = utils.int_to_bits(value, 8, True) + memory_row
             # I write a row for each word, so I group 4 bytes to write a row
-            if i+1 and (i+1) % 4 == 0:
+            if (i+1) % 4 == 0:
                 pos_char = ' '
                 if self.datapath.PC == word_address:
                     pos_char = '*'
@@ -251,9 +265,12 @@ class MainDialog:
                     n_ciphers = None
 
                 # I try to convert the row as an instruction
-                memory_row_bits = utils.int_to_bits(memory_row_int, 32)
+                memory_row_bits = utils.int_to_bits(memory_row_int, 32, True)
                 try:
-                    instruction = get_instruction_object_from_binary(memory_row_bits)
+                    if address < constants.DATA_SEGMENT_START:
+                        instruction = get_instruction_object_from_binary(memory_row_bits)
+                    else:
+                        instruction = None
                 except:
                     instruction = None
                 
@@ -266,10 +283,10 @@ class MainDialog:
             if (i+1) % 4 == 1:
                 word_address = address
 
-        if self.datapath.state != DatapathStates.OK:
-            messagebox.showinfo('Info', self.message_manager.get_message(self.datapath.state.value))
-
         self.__build_menu()
+
+        if self.console_dialog and self.datapath.memory.get_data(constants.TRANSMITTER_CONTROL_ADDRESS) == 1:
+            self.console_dialog.refresh()
 
     def launch_console(self):
         root = tk.Tk()
