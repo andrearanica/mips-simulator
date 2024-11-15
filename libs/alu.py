@@ -46,7 +46,7 @@ class ALU:
     def zero(self) -> int:
         return (self.src_a - self.src_b) == 0
     
-    def get_result(self) -> int:
+    def get_result(self, check_overflow: bool=True) -> int:
         """ Returns the result of the set operation
         """
         result = 0
@@ -55,11 +55,11 @@ class ALU:
         elif self.__alu_operation == AluOperations.OR:
             result = self.__src_a | self.__src_b
         elif self.__alu_operation == AluOperations.SUM:
-            if self.__src_a > MAX_INT - self.__src_b: # I check if there is an overflow
+            if check_overflow and self.__src_a > MAX_INT - self.__src_b: # I check if there is an overflow
                 raise OverflowException(f"Overflow computing {self.__src_a}+{self.__src_b}")
             result = self.__src_a + self.__src_b
         elif self.__alu_operation == AluOperations.SUB:
-            if self.__src_a < MIN_INT + self.__src_b:
+            if check_overflow and self.__src_a < MIN_INT + self.__src_b:
                 raise OverflowException(f"Overflow computing {self.__src_a}-{self.__src_b}")
             result = self.__src_a - self.__src_b
         elif self.__alu_operation == AluOperations.SLT:

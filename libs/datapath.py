@@ -75,7 +75,7 @@ class Datapath:
             self.__state = DatapathStates.OVERFLOW_EXCEPTION
         else:
             self.__state = DatapathStates.GENERIC_ERROR
-            print(exception)
+        print(exception)
 
     def __run_instruction(self):
         """ Executes the instruction that is stored inside the PC
@@ -213,7 +213,7 @@ class Datapath:
         else:
             raise NotValidInstructionException(f'Instruction {instruction} not implemented')
 
-        result = self.__alu.get_result()
+        result = self.__alu.get_result(check_overflow=not is_memory_instruction)
         if not is_memory_instruction:
             self.__register_file.write(result, instruction.rt)
         else:
