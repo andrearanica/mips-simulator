@@ -15,6 +15,8 @@ class DatapathStates(Enum):
     MEMORY_ADDRESS_EXCEPTION = 'MEMORY_ADDRESS_NOT_VALID'
     INSTRUCTION_EXCEPTION = 'INSTRUCTION_NOT_VALID'
     EMPTY = 'NO_INSTRUCTIONS'
+    GENERIC_ERROR = 'GENERIC_ERROR'
+    OVERFLOW_EXCEPTION = 'OVERFLOW_EXCEPTION'
 
 class Datapath:
     def __init__(self) -> None:
@@ -69,8 +71,10 @@ class Datapath:
             self.__state = DatapathStates.MEMORY_ADDRESS_EXCEPTION
         elif isinstance(exception, EmptyInstructionException):
             pass
+        elif isinstance(exception, OverflowException):
+            self.__state = DatapathStates.OVERFLOW_EXCEPTION
         else:
-            # TODO manage other exceptions
+            self.__state = DatapathStates.GENERIC_ERROR
             print(exception)
 
     def __run_instruction(self):
@@ -195,6 +199,9 @@ class Datapath:
         elif instruction.opcode == 0xc:
             self.__alu.alu_operation = AluOperations.AND
         elif instruction.opcode == 0xd:
+            self.__alu.src_a = bits_to_int(int_to_bits(self.__alu.src_a, 32, True), False) 
+            self.__alu.src_b = bits_to_int(int_to_bits(self.__alu.src_b, 32, True), False)
+            print(f'Faccio l\'or fra {self.__alu.src_a} e {self.__alu.src_b}')
             self.__alu.alu_operation = AluOperations.OR
         elif instruction.opcode == 0x23 or instruction.opcode == 0x2b:
             is_memory_instruction = True

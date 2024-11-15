@@ -4,9 +4,6 @@ from libs.exceptions import NotValidInstructionException
 from libs.utils import bits_to_int, int_to_bits
 from libs.exceptions import BreakException
 
-# TODO implement MIN_INT and MAX_INT in setters
-
-
 class Instruction(ABC):
     def __init__(self, opcode: int) -> None:
         self._opcode = opcode

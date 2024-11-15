@@ -1,6 +1,6 @@
 from libs.alu_operations import AluOperations
 from libs.constants import MAX_INT, MIN_INT
-from libs.exceptions import NotValidInstructionException
+from libs.exceptions import *
 
 class ALU:
     def __init__(self) -> None:
@@ -56,11 +56,11 @@ class ALU:
             result = self.__src_a | self.__src_b
         elif self.__alu_operation == AluOperations.SUM:
             if self.__src_a > MAX_INT - self.__src_b: # I check if there is an overflow
-                raise OverflowError(f"Overflow computing {self.__src_a}+{self.__src_b}")
+                raise OverflowException(f"Overflow computing {self.__src_a}+{self.__src_b}")
             result = self.__src_a + self.__src_b
         elif self.__alu_operation == AluOperations.SUB:
             if self.__src_a < MIN_INT + self.__src_b:
-                raise OverflowError(f"Overflow computing {self.__src_a}-{self.__src_b}")
+                raise OverflowException(f"Overflow computing {self.__src_a}-{self.__src_b}")
             result = self.__src_a - self.__src_b
         elif self.__alu_operation == AluOperations.SLT:
             result = self.__src_a < self.__src_b

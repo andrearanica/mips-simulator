@@ -245,7 +245,7 @@ class MainDialog:
     def update_interface(self):
         for item in self.registers_table.get_children():
             self.registers_table.delete(item)
-        self.registers_table.insert('', tk.END, values=('PC', self.datapath.PC))
+        self.registers_table.insert('', tk.END, values=('PC', convert(self.datapath.PC, self.config.get('system'))))
         for register_number, register_value in enumerate(self.datapath.register_file.registers):
             self.registers_table.insert('', tk.END, values=(REGISTERS_NAMES.get(register_number), convert(register_value, self.config['system'])))
         

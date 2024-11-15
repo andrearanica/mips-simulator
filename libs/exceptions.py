@@ -9,3 +9,6 @@ class EmptyInstructionException(Exception):
 
 class NotValidMemoryAddressException(Exception):
     pass
+
+class OverflowException(Exception):
+    pass

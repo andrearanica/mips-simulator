@@ -26,5 +26,7 @@
     "NOT_VALID_FILE_ERROR": "The imported file is not a valid file; please check that the syntax is correct",
     "LAST_FILES": "Last files",
     "SIMULATOR": "Simulator",
-    "SHOW_CONSOLE": "Show console"
+    "SHOW_CONSOLE": "Show console",
+    "GENERIC_ERROR": "Error running the current instruction",
+    "OVERFLOW_EXCEPTION": "Detected overflow running the current instruction"
 }

@@ -26,5 +26,7 @@
     "NOT_VALID_FILE_ERROR": "File selezionato non valido; controllare che la sintassi sia corretta",
     "LAST_FILES": "Recenti",
     "SIMULATOR": "Simulatore",
-    "SHOW_CONSOLE": "Mostra console"
+    "SHOW_CONSOLE": "Mostra console",
+    "GENERIC_ERROR": "Errore durante l'esecuzione dell'istruzione corrente",
+    "OVERFLOW_EXCEPTION": "Overflow durante l'esecuzione dell'istruzione corrente"
 }

@@ -28,7 +28,14 @@ class Memory:
             memory_dict.update(self.__text_segment)
             memory_dict.update(self.__data_segment)
             memory_dict.update(self.__stack_segment)
-            return memory_dict
+
+            # I sort the dict from the lowest memory address
+            ordered_memory_dict = {}
+            if memory_addresses := list(memory_dict.keys()):
+                # memory_addresses.sort()
+                for key in memory_addresses:
+                    ordered_memory_dict[key] = memory_dict.get(key)
+            return ordered_memory_dict
         
     def write_data(self, data: int, address: int) -> None:
         if TEXT_SEGMENT_START <= address < DATA_SEGMENT_START:
