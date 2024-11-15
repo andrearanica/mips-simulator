@@ -66,13 +66,15 @@ class MainDialog:
 
         self.notebook = ttk.Notebook(self.root)
         self.notebook.place(x=350, y=50, width=625, height=300)
-        self.memory_table = ttk.Treeview(self.notebook, columns=('', 'address', 'value'), show='headings')
+        self.memory_table = ttk.Treeview(self.notebook, columns=('', 'address', 'value', 'note'), show='headings')
         self.memory_table.heading('', text='')
         self.memory_table.heading('address', text='Address')
         self.memory_table.heading('value', text='Value')
+        self.memory_table.heading('note', text='Note')
         self.memory_table.column('', width=20, stretch=False)
         self.memory_table.column('address', width=100, stretch=False)
-        self.memory_table.column('value', width=505, stretch=False)
+        self.memory_table.column('value', width=305, stretch=False)
+        self.memory_table.column('note', width=200, stretch=False)
         
         # self.notebook.add(self.code_textbox, text='Code')
         self.notebook.add(self.memory_table, text='Memory')
@@ -278,11 +280,13 @@ class MainDialog:
                 except:
                     instruction = None
                 
+                note = self.__get_memory_address_note(word_address)
+
                 if instruction != None:
                     # If it can be converted in an instruction, I display the instruction
-                    self.memory_table.insert('', tk.END, values=(pos_char, convert(word_address, self.config['system'], n_ciphers), instruction.to_text()))
+                    self.memory_table.insert('', tk.END, values=(pos_char, convert(word_address, self.config['system'], n_ciphers), instruction.to_text(), note))
                 else:
-                    self.memory_table.insert('', tk.END, values=(pos_char, convert(word_address, self.config['system'], n_ciphers), convert(memory_row_int, self.config['system'], n_ciphers)))
+                    self.memory_table.insert('', tk.END, values=(pos_char, convert(word_address, self.config['system'], n_ciphers), convert(memory_row_int, self.config['system'], n_ciphers), note))
                 memory_row = ''
             if (i+1) % 4 == 1:
                 word_address = address
@@ -291,6 +295,12 @@ class MainDialog:
 
         if self.console_dialog and self.datapath.memory.get_data(constants.TRANSMITTER_CONTROL_ADDRESS) == 1:
             self.console_dialog.refresh()
+
+    def __get_memory_address_note(self, address: int):
+        for key, value in constants.SPECIAL_ADDRESSES.items():
+            if value == address:
+                return self.message_manager.get_message(key)
+        return ''
 
     def launch_console(self):
         root = tk.Tk()

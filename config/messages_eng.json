@@ -28,5 +28,9 @@
     "SIMULATOR": "Simulator",
     "SHOW_CONSOLE": "Show console",
     "GENERIC_ERROR": "Error running the current instruction",
-    "OVERFLOW_EXCEPTION": "Detected overflow running the current instruction"
+    "OVERFLOW_EXCEPTION": "Detected overflow running the current instruction",
+    "RECEIVER_CONTROL_ADDRESS": "Receiver control address",
+    "RECEIVER_DATA_ADDRESS": "Receiver data address",
+    "TRANSMITTER_CONTROL_ADDRESS": "Transmitter control address",
+    "TRANSMITTER_DATA_ADDRESS": "Transmitter data address"
 }

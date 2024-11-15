@@ -201,7 +201,6 @@ class Datapath:
         elif instruction.opcode == 0xd:
             self.__alu.src_a = bits_to_int(int_to_bits(self.__alu.src_a, 32, True), False) 
             self.__alu.src_b = bits_to_int(int_to_bits(self.__alu.src_b, 32, True), False)
-            print(f'Faccio l\'or fra {self.__alu.src_a} e {self.__alu.src_b}')
             self.__alu.alu_operation = AluOperations.OR
         elif instruction.opcode == 0x23 or instruction.opcode == 0x2b:
             is_memory_instruction = True

@@ -28,5 +28,9 @@
     "SIMULATOR": "Simulatore",
     "SHOW_CONSOLE": "Mostra console",
     "GENERIC_ERROR": "Errore durante l'esecuzione dell'istruzione corrente",
-    "OVERFLOW_EXCEPTION": "Overflow durante l'esecuzione dell'istruzione corrente"
+    "OVERFLOW_EXCEPTION": "Overflow durante l'esecuzione dell'istruzione corrente",
+    "RECEIVER_CONTROL_ADDRESS": "Receiver control address",
+    "RECEIVER_DATA_ADDRESS": "Receiver data address",
+    "TRANSMITTER_CONTROL_ADDRESS": "Transmitter control address",
+    "TRANSMITTER_DATA_ADDRESS": "Transmitter data address"
 }
