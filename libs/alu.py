@@ -1,5 +1,6 @@
 from libs.alu_operations import AluOperations
 from libs.constants import MAX_INT, MIN_INT
+from libs.utils import or_ca2
 from libs.exceptions import *
 
 class ALU:
@@ -53,7 +54,7 @@ class ALU:
         if self.__alu_operation == AluOperations.AND:
             result = self.__src_a & self.__src_b
         elif self.__alu_operation == AluOperations.OR:
-            result = self.__src_a | self.__src_b
+            result = or_ca2(self.__src_a, self.__src_b)
         elif self.__alu_operation == AluOperations.SUM:
             if check_overflow and self.__src_a > MAX_INT - self.__src_b: # I check if there is an overflow
                 raise OverflowException(f"Overflow computing {self.__src_a}+{self.__src_b}")

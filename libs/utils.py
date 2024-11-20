@@ -91,3 +91,18 @@ def is_number(number_str: str):
             return False
         number_str = number_str[1:]
     return number_str.isnumeric()
+
+def or_ca2(n1: int, n2: int) -> int:
+    """ Returns the logic OR between the 2 numbers in CA2
+    """
+    n1_in_bits = int_to_bits(n1, 32, True)
+    n2_in_bits = int_to_bits(n2, 32, True)
+
+    or_result = ''
+    for i in range(32):
+        if n1_in_bits[i] == '1' or n2_in_bits[i] == '1':
+            or_result += '1'
+        else:
+            or_result += '0'
+    
+    return bits_to_int(or_result, True)

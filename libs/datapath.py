@@ -29,6 +29,11 @@ class Datapath:
         self.__alu_out = 0
         self.__state = DatapathStates.EMPTY
         self.__console = Console(self)
+        self.__initialize_io_registers()
+
+    def __initialize_io_registers(self):
+        self.memory.write_word_data(1, constants.TRANSMITTER_CONTROL_ADDRESS)
+        self.memory.write_word_data(1, constants.RECEIVER_CONTROL_ADDRESS)
 
     @property
     def PC(self) -> int:
@@ -199,8 +204,6 @@ class Datapath:
         elif instruction.opcode == 0xc:
             self.__alu.alu_operation = AluOperations.AND
         elif instruction.opcode == 0xd:
-            self.__alu.src_a = bits_to_int(int_to_bits(self.__alu.src_a, 32, True), False) 
-            self.__alu.src_b = bits_to_int(int_to_bits(self.__alu.src_b, 32, True), False)
             self.__alu.alu_operation = AluOperations.OR
         elif instruction.opcode == 0x23 or instruction.opcode == 0x2b:
             is_memory_instruction = True
